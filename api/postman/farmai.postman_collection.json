@@ -1,0 +1,152 @@
+{
+  "info": {
+    "name": "FarmAI API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run 'Login' first. The test script saves access_token and refresh_token as collection variables."
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000/api/v1" },
+    { "key": "access_token", "value": "" },
+    { "key": "refresh_token", "value": "" },
+    { "key": "farm_id", "value": "" },
+    { "key": "diagnosis_id", "value": "" }
+  ],
+  "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Mary Banda\",\n  \"phone\": \"+265999000111\",\n  \"password\": \"Password123!\",\n  \"role\": \"farmer\",\n  \"language\": \"en\"\n}" }
+          }
+        },
+        {
+          "name": "Login (demo farmer)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const d = pm.response.json().data;", "pm.collectionVariables.set('access_token', d.access_token);", "pm.collectionVariables.set('refresh_token', d.refresh_token);"] } }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"+265999000003\",\n  \"password\": \"Password123!\"\n}" }
+          }
+        },
+        {
+          "name": "Refresh",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('access_token', pm.response.json().data.access_token);"] } }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/refresh",
+            "body": { "mode": "raw", "raw": "{ \"refresh_token\": \"{{refresh_token}}\" }" }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/logout",
+            "body": { "mode": "raw", "raw": "{ \"refresh_token\": \"{{refresh_token}}\" }" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        { "name": "Me", "request": { "method": "GET", "url": "{{baseUrl}}/users/me" } },
+        { "name": "List users (admin)", "request": { "method": "GET", "url": "{{baseUrl}}/users?page=1&limit=20" } }
+      ]
+    },
+    {
+      "name": "Farms",
+      "item": [
+        {
+          "name": "Create farm",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('farm_id', pm.response.json().data.id);"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/farms",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Home plot\",\n  \"district\": \"Lilongwe\",\n  \"lat\": -13.96,\n  \"lng\": 33.78,\n  \"soil_type\": \"loam\",\n  \"size_ha\": 1.5\n}" }
+          }
+        },
+        { "name": "List farms", "request": { "method": "GET", "url": "{{baseUrl}}/farms" } },
+        { "name": "Get farm", "request": { "method": "GET", "url": "{{baseUrl}}/farms/{{farm_id}}" } },
+        {
+          "name": "Add planting",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/farms/{{farm_id}}/plantings",
+            "body": { "mode": "raw", "raw": "{ \"crop\": \"maize\", \"planting_date\": \"2026-11-25\" }" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Diagnoses",
+      "item": [
+        {
+          "name": "Submit symptoms",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('diagnosis_id', pm.response.json().data.diagnosis_id);"] } }],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/diagnoses",
+            "body": { "mode": "formdata", "formdata": [
+              { "key": "farm_id", "value": "{{farm_id}}", "type": "text" },
+              { "key": "crop", "value": "maize", "type": "text" },
+              { "key": "symptoms", "value": "Yellow streaks on young leaves", "type": "text" },
+              { "key": "image", "type": "file", "src": [] }
+            ] }
+          }
+        },
+        { "name": "Get diagnosis", "request": { "method": "GET", "url": "{{baseUrl}}/diagnoses/{{diagnosis_id}}" } },
+        { "name": "History", "request": { "method": "GET", "url": "{{baseUrl}}/diagnoses?farm_id={{farm_id}}" } }
+      ]
+    },
+    {
+      "name": "Advisory",
+      "item": [
+        {
+          "name": "Ask a question",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/advisory/ask",
+            "body": { "mode": "raw", "raw": "{ \"farm_id\": \"{{farm_id}}\", \"question\": \"When should I weed my maize?\", \"language\": \"en\" }" }
+          }
+        },
+        { "name": "Planting readiness", "request": { "method": "GET", "url": "{{baseUrl}}/planting-readiness?farm_id={{farm_id}}&crop=maize" } },
+        { "name": "Crop recommendations", "request": { "method": "GET", "url": "{{baseUrl}}/recommendations/crops?farm_id={{farm_id}}" } },
+        { "name": "Weather", "request": { "method": "GET", "url": "{{baseUrl}}/weather?farm_id={{farm_id}}" } }
+      ]
+    },
+    {
+      "name": "Officers",
+      "item": [
+        { "name": "Outbreaks", "request": { "method": "GET", "url": "{{baseUrl}}/outbreaks?district=Lilongwe" } },
+        { "name": "Weather heatmap", "request": { "method": "GET", "url": "{{baseUrl}}/weather/heatmap" } },
+        {
+          "name": "Create alert",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/alerts",
+            "body": { "mode": "raw", "raw": "{ \"title\": \"Fall armyworm warning\", \"message\": \"Check maize fields this week.\", \"target_district\": \"Lilongwe\" }" }
+          }
+        },
+        { "name": "Admin stats", "request": { "method": "GET", "url": "{{baseUrl}}/admin/stats" } }
+      ]
+    }
+  ]
+}

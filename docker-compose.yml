@@ -1,0 +1,78 @@
+# Local development stack: docker compose up --build
+# First run: docker compose run --rm api npm run seed   (reference data + demo users)
+name: farmai
+
+x-internal-key: &internal_key ${INTERNAL_API_KEY:-dev-internal-key}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: farmai
+      POSTGRES_PASSWORD: farmai
+      POSTGRES_DB: farmai_dev
+    ports: ['5432:5432']
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U farmai -d farmai_dev']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports: ['6379:6379']
+
+  api:
+    build: ./api
+    command: sh -c "node db/migrate.js && node server.js"
+    ports: ['4000:4000']
+    environment:
+      NODE_ENV: development
+      API_PORT: 4000
+      DATABASE_URL: postgres://farmai:farmai@postgres:5432/farmai_dev
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-access-secret}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret}
+      CORS_ORIGIN: http://localhost:5173
+      INTERNAL_API_KEY: *internal_key
+      ADVISORY_URL: http://advisory:8001
+      VISION_URL: http://vision:8002
+      UPLOAD_DIR: /app/uploads
+    volumes: [uploads:/app/uploads]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+      advisory: { condition: service_started }
+      vision: { condition: service_started }
+
+  advisory:
+    build: ./ai-services/advisory
+    ports: ['8001:8001']
+    environment:
+      INTERNAL_API_KEY: *internal_key
+
+  vision:
+    build: ./ai-services/vision
+    ports: ['8002:8002']
+    environment:
+      INTERNAL_API_KEY: *internal_key
+
+  web:
+    build: ./web
+    ports: ['5173:5173']
+    environment:
+      VITE_API_URL: http://localhost:4000/api/v1
+    depends_on: [api]
+
+  # Later phase (Chichewa speech). Start with: docker compose --profile later up speech
+  speech:
+    build: ./ai-services/speech
+    profiles: [later]
+    ports: ['8003:8003']
+    environment:
+      INTERNAL_API_KEY: *internal_key
+
+volumes:
+  pgdata:
+  uploads:

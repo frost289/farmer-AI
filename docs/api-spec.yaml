@@ -1,0 +1,1053 @@
+openapi: 3.0.3
+info:
+  title: FarmAI API
+  version: 1.0.0
+  description: |
+    Public API used by the FarmAI web app, plus the internal AI service API.
+    Human-readable reference: API_SPECIFICATION.md. Field names and enums: SHARED_DATA_FIELDS.md.
+    Errors follow ERROR_FORMATS.md.
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Local api
+  - url: http://localhost:8001/ai/v1
+    description: Local advisory service (internal)
+  - url: http://localhost:8002/ai/v1
+    description: Local vision service (internal)
+tags:
+  - name: Auth
+  - name: Users
+  - name: Farms
+  - name: Diagnoses
+  - name: Advisory
+  - name: Weather
+  - name: Outbreaks
+  - name: Alerts
+  - name: AI Vision (internal)
+  - name: AI Advisory (internal)
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Create an account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, password]
+              properties:
+                phone: { type: string, example: '+265999000111' }
+                password: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Get a new access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      access_token: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Current user profile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    put:
+      tags: [Users]
+      summary: Update own profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string, nullable: true }
+                language: { $ref: '#/components/schemas/Language' }
+                district: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /users:
+    get:
+      tags: [Users]
+      summary: List users (admin)
+      parameters:
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/User' }
+                  meta: { $ref: '#/components/schemas/PageMeta' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /users/{id}/role:
+    put:
+      tags: [Users]
+      summary: Change a user's role (admin)
+      parameters:
+        - { $ref: '#/components/parameters/IdPath' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role: { $ref: '#/components/schemas/Role' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/User' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /farms:
+    get:
+      tags: [Farms]
+      summary: List own farms
+      parameters:
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Farm' }
+                  meta: { $ref: '#/components/schemas/PageMeta' }
+    post:
+      tags: [Farms]
+      summary: Create a farm
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FarmInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Farm' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /farms/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/IdPath' }
+    get:
+      tags: [Farms]
+      summary: Farm detail
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Farm' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Farms]
+      summary: Update a farm
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FarmInput' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Farm' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Farms]
+      summary: Delete a farm
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /farms/{id}/plantings:
+    parameters:
+      - { $ref: '#/components/parameters/IdPath' }
+    get:
+      tags: [Farms]
+      summary: List plantings of a farm
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Planting' }
+    post:
+      tags: [Farms]
+      summary: Add a planting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlantingInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Planting' }
+
+  /diagnoses:
+    post:
+      tags: [Diagnoses]
+      summary: Submit a photo and/or symptoms for diagnosis
+      description: Provide at least one of `image` or `symptoms`.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [farm_id]
+              properties:
+                farm_id: { type: string, format: uuid }
+                crop: { $ref: '#/components/schemas/Crop' }
+                symptoms: { type: string, maxLength: 1000 }
+                image: { type: string, format: binary, description: JPEG or PNG, max 5 MB }
+      responses:
+        '202':
+          description: Accepted. Poll GET /diagnoses/{id}.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      diagnosis_id: { type: string, format: uuid }
+                      status: { $ref: '#/components/schemas/DiagnosisStatus' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+    get:
+      tags: [Diagnoses]
+      summary: Diagnosis history
+      parameters:
+        - { name: farm_id, in: query, schema: { type: string, format: uuid } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Diagnosis' }
+                  meta: { $ref: '#/components/schemas/PageMeta' }
+
+  /diagnoses/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/IdPath' }
+    get:
+      tags: [Diagnoses]
+      summary: Diagnosis status and result
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Diagnosis' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /advisory/ask:
+    post:
+      tags: [Advisory]
+      summary: Ask an agronomy question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question]
+              properties:
+                farm_id: { type: string, format: uuid }
+                question: { type: string, maxLength: 500 }
+                language: { $ref: '#/components/schemas/Language' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      answer: { type: string }
+                      language: { $ref: '#/components/schemas/Language' }
+        '503': { $ref: '#/components/responses/AiUnavailable' }
+        '504': { $ref: '#/components/responses/AiTimeout' }
+
+  /planting-readiness:
+    get:
+      tags: [Advisory]
+      summary: Can I plant this week?
+      parameters:
+        - { name: farm_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: crop, in: query, required: true, schema: { $ref: '#/components/schemas/Crop' } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/PlantingReadiness' }
+        '503': { $ref: '#/components/responses/AiUnavailable' }
+
+  /recommendations/crops:
+    get:
+      tags: [Advisory]
+      summary: Crop and seed recommendations
+      parameters:
+        - { name: farm_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      recommendations:
+                        type: array
+                        items: { $ref: '#/components/schemas/CropRecommendation' }
+        '503': { $ref: '#/components/responses/AiUnavailable' }
+
+  /weather:
+    get:
+      tags: [Weather]
+      summary: Forecast for a farm
+      parameters:
+        - { name: farm_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Weather' }
+        '503': { $ref: '#/components/responses/WeatherUnavailable' }
+
+  /weather/heatmap:
+    get:
+      tags: [Weather]
+      summary: Regional weather (officers, admin)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        district: { type: string }
+                        rain_mm: { type: number }
+                        temp_c: { type: number }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /outbreaks:
+    get:
+      tags: [Outbreaks]
+      summary: Pest and disease outbreaks (officers, admin)
+      parameters:
+        - { name: district, in: query, schema: { type: string } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Outbreak' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /alerts:
+    get:
+      tags: [Alerts]
+      summary: Alerts for the current user
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Alert' }
+    post:
+      tags: [Alerts]
+      summary: Create an alert (officers, admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, message]
+              properties:
+                title: { type: string, maxLength: 150 }
+                message: { type: string }
+                target_district: { type: string }
+                target_user_id: { type: string, format: uuid }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Alert' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /health:
+    get:
+      tags: [Auth]
+      summary: Service health
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+
+  # ---------- Internal AI services ----------
+  /vision/diagnose:
+    post:
+      tags: [AI Vision (internal)]
+      summary: Diagnose a crop image (vision service, port 8002)
+      security: [{ internalKey: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image: { type: string, format: binary }
+                crop: { $ref: '#/components/schemas/Crop' }
+                request_id: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VisionDiagnoseResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /advisory/query:
+    post:
+      tags: [AI Advisory (internal)]
+      summary: Answer an agronomy question (advisory service, port 8001)
+      security: [{ internalKey: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question, language]
+              properties:
+                question: { type: string }
+                language: { $ref: '#/components/schemas/Language' }
+                context:
+                  type: object
+                  properties:
+                    crop: { $ref: '#/components/schemas/Crop' }
+                    district: { type: string }
+                    season: { type: string, enum: [rainy, dry] }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answer: { type: string }
+                  sources:
+                    type: array
+                    items: { type: string }
+                  model_version: { type: string }
+
+  /advisory/treatment:
+    post:
+      tags: [AI Advisory (internal)]
+      summary: Treatment advice for a diagnosis
+      security: [{ internalKey: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [diagnosis, language]
+              properties:
+                diagnosis:
+                  type: object
+                  properties:
+                    label: { type: string, example: maize_streak_virus }
+                    severity_pct: { type: number }
+                crop: { $ref: '#/components/schemas/Crop' }
+                language: { $ref: '#/components/schemas/Language' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Treatment' }
+
+  /advisory/planting-readiness:
+    post:
+      tags: [AI Advisory (internal)]
+      summary: Planting readiness from weather and soil
+      security: [{ internalKey: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [crop, location, weather]
+              properties:
+                crop: { $ref: '#/components/schemas/Crop' }
+                location: { $ref: '#/components/schemas/Location' }
+                soil_type: { $ref: '#/components/schemas/SoilType' }
+                weather:
+                  type: object
+                  properties:
+                    forecast_7d:
+                      type: array
+                      items: { $ref: '#/components/schemas/ForecastDay' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlantingReadiness' }
+
+  /advisory/recommend-crops:
+    post:
+      tags: [AI Advisory (internal)]
+      summary: Recommend crops and seeds
+      security: [{ internalKey: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [location]
+              properties:
+                location: { $ref: '#/components/schemas/Location' }
+                soil_type: { $ref: '#/components/schemas/SoilType' }
+                weather:
+                  type: object
+                  properties:
+                    forecast_7d:
+                      type: array
+                      items: { $ref: '#/components/schemas/ForecastDay' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recommendations:
+                    type: array
+                    items: { $ref: '#/components/schemas/CropRecommendation' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    internalKey:
+      type: apiKey
+      in: header
+      name: X-Internal-Key
+
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+
+  responses:
+    ValidationError:
+      description: Invalid input (VALIDATION_ERROR, INVALID_IMAGE)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: UNAUTHORIZED
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: FORBIDDEN
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: NOT_FOUND
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: CONFLICT
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    PayloadTooLarge:
+      description: PAYLOAD_TOO_LARGE
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    AiUnavailable:
+      description: AI_UNAVAILABLE
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    AiTimeout:
+      description: AI_TIMEOUT
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    WeatherUnavailable:
+      description: WEATHER_UNAVAILABLE
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                - VALIDATION_ERROR
+                - INVALID_IMAGE
+                - UNAUTHORIZED
+                - FORBIDDEN
+                - NOT_FOUND
+                - CONFLICT
+                - PAYLOAD_TOO_LARGE
+                - LOW_QUALITY_IMAGE
+                - RATE_LIMITED
+                - INTERNAL_ERROR
+                - AI_UNAVAILABLE
+                - AI_TIMEOUT
+                - WEATHER_UNAVAILABLE
+            message: { type: string }
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field: { type: string }
+                  issue: { type: string }
+            request_id: { type: string }
+
+    PageMeta:
+      type: object
+      properties:
+        page: { type: integer }
+        limit: { type: integer }
+        total: { type: integer }
+
+    Role:
+      type: string
+      enum: [farmer, field_agent, extension_officer, admin]
+    Language:
+      type: string
+      enum: [en, ny]
+    SoilType:
+      type: string
+      enum: [sandy, loam, clay, silt, sandy_loam, clay_loam, unknown]
+    DiagnosisStatus:
+      type: string
+      enum: [pending, processing, completed, failed]
+    DiagnosisType:
+      type: string
+      enum: [disease, pest, healthy, unknown]
+    Severity:
+      type: string
+      enum: [low, moderate, high]
+    PlantingVerdict:
+      type: string
+      enum: [plant, wait, not_recommended]
+    SoilMoisture:
+      type: string
+      enum: [dry, adequate, wet]
+    PlantingStatus:
+      type: string
+      enum: [planned, planted, growing, harvested, failed]
+    Crop:
+      type: string
+      enum: [maize, rice, groundnut, soybean, tobacco, cassava, sweet_potato, beans, cotton, tomato, pigeon_pea]
+
+    Location:
+      type: object
+      required: [lat, lng]
+      properties:
+        lat: { type: number, minimum: -90, maximum: 90 }
+        lng: { type: number, minimum: -180, maximum: 180 }
+        district: { type: string }
+
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        phone: { type: string }
+        email: { type: string, nullable: true }
+        role: { $ref: '#/components/schemas/Role' }
+        language: { $ref: '#/components/schemas/Language' }
+        district: { type: string, nullable: true }
+        is_active: { type: boolean }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    RegisterRequest:
+      type: object
+      required: [name, phone, password, role, language]
+      properties:
+        name: { type: string, maxLength: 100 }
+        phone: { type: string, example: '+265999000111' }
+        email: { type: string, nullable: true }
+        password: { type: string, minLength: 8 }
+        role: { $ref: '#/components/schemas/Role' }
+        language: { $ref: '#/components/schemas/Language' }
+
+    AuthResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            access_token: { type: string }
+            refresh_token: { type: string }
+            user: { $ref: '#/components/schemas/User' }
+
+    FarmInput:
+      type: object
+      required: [name, district]
+      properties:
+        name: { type: string, maxLength: 100 }
+        district: { type: string }
+        lat: { type: number }
+        lng: { type: number }
+        soil_type: { $ref: '#/components/schemas/SoilType' }
+        size_ha: { type: number, exclusiveMinimum: true, minimum: 0 }
+
+    Farm:
+      allOf:
+        - { $ref: '#/components/schemas/FarmInput' }
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            owner_id: { type: string, format: uuid }
+            created_at: { type: string, format: date-time }
+            updated_at: { type: string, format: date-time }
+
+    PlantingInput:
+      type: object
+      required: [crop]
+      properties:
+        crop: { $ref: '#/components/schemas/Crop' }
+        variety: { type: string }
+        planting_date: { type: string, format: date }
+        expected_harvest_date: { type: string, format: date }
+        status: { $ref: '#/components/schemas/PlantingStatus' }
+
+    Planting:
+      allOf:
+        - { $ref: '#/components/schemas/PlantingInput' }
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            farm_id: { type: string, format: uuid }
+
+    Treatment:
+      type: object
+      properties:
+        organic:
+          type: array
+          items: { type: string }
+        chemical:
+          type: array
+          items: { type: string }
+        prevention:
+          type: array
+          items: { type: string }
+        warnings:
+          type: array
+          items: { type: string }
+
+    DiagnosisResult:
+      type: object
+      properties:
+        type: { $ref: '#/components/schemas/DiagnosisType' }
+        name: { type: string, example: maize_streak_virus }
+        confidence: { type: number, minimum: 0, maximum: 1 }
+        severity: { $ref: '#/components/schemas/Severity' }
+        severity_pct: { type: number, minimum: 0, maximum: 100 }
+        treatment: { $ref: '#/components/schemas/Treatment' }
+        low_confidence: { type: boolean }
+        model_version: { type: string }
+
+    Diagnosis:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        farm_id: { type: string, format: uuid }
+        crop: { $ref: '#/components/schemas/Crop' }
+        status: { $ref: '#/components/schemas/DiagnosisStatus' }
+        result:
+          nullable: true
+          allOf:
+            - { $ref: '#/components/schemas/DiagnosisResult' }
+        error_code: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    PlantingReadiness:
+      type: object
+      properties:
+        verdict: { $ref: '#/components/schemas/PlantingVerdict' }
+        reason: { type: string }
+        rain_onset_date: { type: string, format: date, nullable: true }
+        soil_moisture: { $ref: '#/components/schemas/SoilMoisture' }
+        confidence: { type: number, minimum: 0, maximum: 1 }
+
+    CropRecommendation:
+      type: object
+      properties:
+        crop: { $ref: '#/components/schemas/Crop' }
+        variety: { type: string }
+        score: { type: number, minimum: 0, maximum: 1 }
+        reason: { type: string }
+
+    ForecastDay:
+      type: object
+      properties:
+        date: { type: string, format: date }
+        rain_mm: { type: number }
+        temp_c: { type: number }
+        humidity_pct: { type: number }
+
+    Weather:
+      type: object
+      properties:
+        location: { $ref: '#/components/schemas/Location' }
+        forecast_7d:
+          type: array
+          items: { $ref: '#/components/schemas/ForecastDay' }
+        fetched_at: { type: string, format: date-time }
+
+    Outbreak:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        disease: { type: string }
+        crop: { $ref: '#/components/schemas/Crop' }
+        district: { type: string }
+        case_count: { type: integer }
+        period_start: { type: string, format: date }
+        period_end: { type: string, format: date }
+
+    Alert:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        message: { type: string }
+        target_district: { type: string, nullable: true }
+        target_user_id: { type: string, format: uuid, nullable: true }
+        status: { type: string, enum: [draft, sent, cancelled] }
+        created_by: { type: string, format: uuid }
+        created_at: { type: string, format: date-time }
+
+    VisionDiagnoseResponse:
+      type: object
+      properties:
+        predictions:
+          type: array
+          maxItems: 3
+          items:
+            type: object
+            properties:
+              label: { type: string, example: maize_streak_virus }
+              type: { $ref: '#/components/schemas/DiagnosisType' }
+              confidence: { type: number, minimum: 0, maximum: 1 }
+        severity_pct: { type: number }
+        model_version: { type: string }
+        quality:
+          type: object
+          properties:
+            usable: { type: boolean }
+            issues:
+              type: array
+              items: { type: string }

@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0",
+  "note": "Owned jointly by Members 3 and 4. Copies live in ai-services/*/app/taxonomy.json; run scripts/sync-taxonomy.sh after editing. 'ny' (Chichewa) names must be added and reviewed by a native speaker.",
+  "labels": [
+    { "label": "maize_streak_virus", "type": "disease", "crops": ["maize"], "display": { "en": "Maize streak virus", "ny": null } },
+    { "label": "maize_gray_leaf_spot", "type": "disease", "crops": ["maize"], "display": { "en": "Maize gray leaf spot", "ny": null } },
+    { "label": "fall_armyworm", "type": "pest", "crops": ["maize"], "display": { "en": "Fall armyworm", "ny": null } },
+    { "label": "cassava_mosaic_disease", "type": "disease", "crops": ["cassava"], "display": { "en": "Cassava mosaic disease", "ny": null } },
+    { "label": "groundnut_rosette", "type": "disease", "crops": ["groundnut"], "display": { "en": "Groundnut rosette", "ny": null } },
+    { "label": "tomato_late_blight", "type": "disease", "crops": ["tomato"], "display": { "en": "Tomato late blight", "ny": null } },
+    { "label": "healthy", "type": "healthy", "crops": ["*"], "display": { "en": "Healthy plant", "ny": null } }
+  ]
+}
