@@ -1,44 +1,33 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import { env } from './config/env.js';
-import { logger } from './config/logger.js';
-import { uploadDir } from './config/storage.js';
-import { apiLimiter } from './middleware/rateLimiter.js';
-import { errorHandler, notFound } from './middleware/errorHandler.js';
-import { requestId } from './middleware/requestId.js';
-import routes from './routes.js';
+import { Router } from 'express';
+import { authenticate } from './middleware/authenticate.js';
+import authRoutes from './modules/auth/auth.routes.js';
+import usersRoutes from './modules/users/users.routes.js';
+import farmsRoutes from './modules/farms/farms.routes.js';
+import plantingsRoutes from './modules/plantings/plantings.routes.js';
+import diagnosesRoutes from './modules/diagnoses/diagnoses.routes.js';
+import advisoryRoutes from './modules/advisory/advisory.routes.js';
+import weatherRoutes from './modules/weather/weather.routes.js';
+import recommendationsRoutes from './modules/recommendations/recommendations.routes.js';
+import outbreaksRoutes from './modules/outbreaks/outbreaks.routes.js';
+import alertsRoutes from './modules/alerts/alerts.routes.js';
+import adminRoutes from './modules/admin/admin.routes.js';
+import publicRoutes from './modules/public/public.routes.js';
 
-const app = express();
-app.disable('x-powered-by');
-app.set('trust proxy', 1);
+const router = Router();
 
-app.use(requestId);
-app.use((req, res, next) => {
-  const start = Date.now();
-  res.on('finish', () =>
-    logger.info('request', {
-      request_id: req.id,
-      method: req.method,
-      path: req.originalUrl.split('?')[0],
-      status: res.statusCode,
-      ms: Date.now() - start,
-    }),
-  );
-  next();
-});
+router.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-app.use(cors({ origin: env.corsOrigins, credentials: true }));
-app.use(express.json({ limit: '1mb' }));
+router.use('/auth', authRoutes); // auth.routes.js applies its own rate limiter
+router.use('/public', publicRoutes); // no login needed (see public.routes.js)
+router.use('/users', authenticate, usersRoutes);
+router.use('/farms/:id/plantings', authenticate, plantingsRoutes);
+router.use('/farms', authenticate, farmsRoutes);
+router.use('/diagnoses', authenticate, diagnosesRoutes);
+router.use('/advisory', authenticate, advisoryRoutes);
+router.use('/weather', authenticate, weatherRoutes);
+router.use('/', authenticate, recommendationsRoutes); // /recommendations/crops, /planting-readiness
+router.use('/outbreaks', authenticate, outbreaksRoutes);
+router.use('/alerts', authenticate, alertsRoutes);
+router.use('/admin', authenticate, adminRoutes);
 
-// MVP: uploaded crop photos use unguessable UUID file names. Move to signed URLs before production.
-app.use('/uploads', express.static(uploadDir));
-
-app.get('/health', (_req, res) => res.json({ status: 'ok' }));
-app.use('/api/v1', apiLimiter, routes);
-
-app.use(notFound);
-app.use(errorHandler);
-
-export default app;
+export default router;
