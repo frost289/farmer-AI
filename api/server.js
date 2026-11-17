@@ -11,6 +11,12 @@ import { scheduleOutbreakAggregation } from './src/jobs/outbreak.aggregator.js';
 async function resolveApp() {
   const candidate = appModule.default ?? appModule.app ?? appModule.createApp;
   if (candidate && typeof candidate.listen === 'function') return candidate;
+  if (candidate && typeof candidate.use === 'function' && Array.isArray(candidate.stack)) {
+    throw new Error(
+      'src/app.js exports an Express Router, not the app. It probably contains the contents of routes.js. ' +
+        'Restore src/app.js (it must call express() and end with "export default app").',
+    );
+  }
   const factory = typeof appModule.createApp === 'function' ? appModule.createApp : candidate;
   if (typeof factory !== 'function') {
     throw new Error('src/app.js must export an Express app or a createApp() function');
