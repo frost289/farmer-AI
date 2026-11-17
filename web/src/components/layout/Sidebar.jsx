@@ -8,7 +8,8 @@ export default function Sidebar({ open, onClose }) {
   const isOfficer = OFFICER_ROLES.includes(user?.role);
 
   const items = [
-    { to: '/dashboard', label: t('nav.dashboard'), icon: '🏠', show: !isOfficer },
+    { to: '/', label: t('nav.home'), icon: '💬', show: true },
+    { to: '/dashboard', label: t('nav.dashboard'), icon: '🏠', show: true },
     { to: '/diagnosis', label: t('nav.diagnosis'), icon: '🌿', show: true },
     { to: '/planting', label: t('nav.planting'), icon: '🌧️', show: true },
     { to: '/recommendations', label: t('nav.recommendations'), icon: '🌱', show: true },
@@ -30,6 +31,7 @@ export default function Sidebar({ open, onClose }) {
             <NavLink
               key={item.to}
               to={item.to}
+              end={item.to === '/'}
               onClick={onClose}
               className={({ isActive }) =>
                 `flex min-h-[48px] items-center gap-3 rounded-lg px-3 text-base ${
