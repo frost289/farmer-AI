@@ -3,7 +3,8 @@ import { createContext, useCallback, useMemo, useState } from 'react';
 // Add Chichewa (ny) strings here as translations are reviewed. Missing keys fall back to English.
 const messages = {
   en: {
-    'nav.dashboard': 'Home',
+    'nav.home': 'Home',
+    'nav.dashboard': 'Dashboard',
     'nav.diagnosis': 'Check my crop',
     'nav.planting': 'Can I plant?',
     'nav.recommendations': 'What to plant',
