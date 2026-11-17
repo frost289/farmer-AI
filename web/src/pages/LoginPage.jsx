@@ -1,4 +1,7 @@
 import { Link, Navigate } from 'react-router-dom';
+import Logo from '../components/common/Logo.jsx';
+import Reveal from '../components/common/Reveal.jsx';
+import ThemeToggle from '../components/common/ThemeToggle.jsx';
 import LoginForm from '../features/auth/LoginForm.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 
@@ -6,16 +9,19 @@ export default function LoginPage() {
   const { user } = useAuth();
   if (user) return <Navigate to="/dashboard" replace />;
   return (
-    <div className="flex min-h-screen items-center justify-center bg-brand-50 p-4">
-      <div className="w-full max-w-sm space-y-4">
-        <Link to="/" className="flex items-center justify-center gap-2 text-2xl font-bold text-brand-700">
-          <img src="/logo.svg" alt="" className="h-10 w-10" /> FarmAI
+    <div className="flex min-h-screen items-center justify-center bg-emerald-50 p-4 dark:bg-slate-900">
+      <div className="absolute right-4 top-4">
+        <ThemeToggle />
+      </div>
+      <Reveal className="w-full max-w-md space-y-6">
+        <Link to="/" className="flex justify-center" aria-label="FarmAI home">
+          <Logo size="lg" />
         </Link>
         <div className="card">
-          <h1 className="mb-4 text-xl font-semibold">Log in</h1>
+          <h1 className="mb-5 text-3xl font-extrabold">Log in</h1>
           <LoginForm />
         </div>
-      </div>
+      </Reveal>
     </div>
   );
 }

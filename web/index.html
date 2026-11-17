@@ -4,7 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#16844a" />
+    <meta name="theme-color" content="#059669" />
+    <script>
+      try {
+        var t = localStorage.getItem("farmai.theme");
+        if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.classList.add("dark");
+        }
+      } catch (e) {}
+    </script>
     <title>FarmAI</title>
   </head>
   <body>

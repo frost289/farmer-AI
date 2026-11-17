@@ -1,12 +1,13 @@
+import { ShieldCheck } from 'lucide-react';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import { humanize } from '../../utils/formatters.js';
 
 export default function OutbreakTable({ rows = [] }) {
-  if (!rows.length) return <EmptyState title="No outbreaks found" message="Try a different district or date range." />;
+  if (!rows.length) return <EmptyState icon={ShieldCheck} title="No outbreaks found" message="Try a different district or date range." />;
   return (
-    <div className="overflow-x-auto rounded-xl border bg-white">
-      <table className="w-full text-left text-sm">
-        <thead className="bg-gray-50 text-gray-600">
+    <div className="overflow-x-auto rounded-xl border bg-white dark:bg-slate-800">
+      <table className="w-full text-left text-base">
+        <thead className="bg-gray-50 dark:bg-slate-800/60 text-gray-600 dark:text-slate-300">
           <tr>
             <th className="p-3">Disease / pest</th>
             <th className="p-3">Crop</th>

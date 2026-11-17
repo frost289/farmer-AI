@@ -1,9 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
+import { CloudRain } from 'lucide-react';
 import { useState } from 'react';
 import Alert from '../components/common/Alert.jsx';
 import Button from '../components/common/Button.jsx';
 import { Select } from '../components/common/Input.jsx';
 import Loader from '../components/common/Loader.jsx';
+import MapPreview from '../components/common/MapPreview.jsx';
+import Reveal from '../components/common/Reveal.jsx';
 import FarmSelect from '../features/farms/FarmSelect.jsx';
 import PlantingReadiness from '../features/planting/PlantingReadiness.jsx';
 import WeatherSummary from '../features/planting/WeatherSummary.jsx';
@@ -34,20 +37,58 @@ export default function PlantingPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Can I plant this week?</h1>
-      <section className="card space-y-4">
-        {farms.isLoading ? <Loader /> : <FarmSelect farms={farms.data} value={farmId} onChange={(v) => { setFarmId(v); setRequest(null); }} />}
-        <Select label="Crop" options={CROPS.map((c) => ({ value: c, label: humanize(c) }))} value={crop} onChange={(e) => { setCrop(e.target.value); setRequest(null); }} />
-        {farmId && !hasLocation && <Alert type="warning">This farm has no location yet. Open the farm and add it to get weather advice.</Alert>}
-        <Button className="w-full" disabled={!farmId || !hasLocation} loading={readiness.isFetching} onClick={() => setRequest({ farmId, crop })}>
-          Check now
-        </Button>
-      </section>
+    <div className="space-y-8">
+      <h1 className="page-title">Can I Plant Today?</h1>
+
+      <Reveal>
+        <section className="card space-y-6">
+          {farms.isLoading ? (
+            <Loader />
+          ) : (
+            <FarmSelect
+              farms={farms.data}
+              value={farmId}
+              onChange={(v) => {
+                setFarmId(v);
+                setRequest(null);
+              }}
+            />
+          )}
+          <Select
+            label="Which crop?"
+            options={CROPS.map((c) => ({ value: c, label: humanize(c) }))}
+            value={crop}
+            onChange={(e) => {
+              setCrop(e.target.value);
+              setRequest(null);
+            }}
+          />
+          {farmId && !hasLocation && (
+            <Alert type="warning">This farm has no location yet. Open the farm and add its location to get weather advice.</Alert>
+          )}
+          <Button
+            icon={CloudRain}
+            className="w-full !min-h-[64px] text-xl"
+            disabled={!farmId || !hasLocation}
+            loading={readiness.isFetching}
+            onClick={() => setRequest({ farmId, crop })}
+          >
+            Check now
+          </Button>
+        </section>
+      </Reveal>
 
       {readiness.error && <Alert type="error">{errorMessage(readiness.error)}</Alert>}
-      <PlantingReadiness readiness={readiness.data} />
-      {farmId && hasLocation && <WeatherSummary weather={weather.data} isLoading={weather.isLoading} error={weather.error} />}
+      <PlantingReadiness readiness={readiness.data} crop={request?.crop} />
+
+      {farmId && hasLocation && (
+        <Reveal delay={120}>
+          <div className="space-y-6">
+            <MapPreview lat={farm.lat} lng={farm.lng} title={`Map of ${farm.name}`} />
+            <WeatherSummary weather={weather.data} isLoading={weather.isLoading} error={weather.error} />
+          </div>
+        </Reveal>
+      )}
     </div>
   );
 }

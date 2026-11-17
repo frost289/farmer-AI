@@ -11,7 +11,7 @@ export default function TrendChart({ data = [], xKey = 'week', yKey = 'cases' })
           <XAxis dataKey={xKey} fontSize={12} />
           <YAxis allowDecimals={false} fontSize={12} />
           <Tooltip />
-          <Line type="monotone" dataKey={yKey} stroke="#16844a" strokeWidth={2} dot />
+          <Line type="monotone" dataKey={yKey} stroke="#059669" strokeWidth={2} dot />
         </LineChart>
       </ResponsiveContainer>
     </div>

@@ -11,7 +11,7 @@ export default function DashboardLayout() {
       <Navbar onMenu={() => setMenuOpen((o) => !o)} />
       <div className="flex flex-1">
         <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
-        <main className="mx-auto w-full max-w-5xl flex-1 p-4">
+        <main className="mx-auto w-full max-w-5xl flex-1 p-4 sm:p-6">
           <Outlet />
         </main>
       </div>

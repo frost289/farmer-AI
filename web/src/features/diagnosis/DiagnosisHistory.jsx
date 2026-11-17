@@ -1,14 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
+import { CheckCircle2, Clock, History, XCircle } from 'lucide-react';
+import CropIcon from '../../components/common/CropIcon.jsx';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import Loader from '../../components/common/Loader.jsx';
 import { listDiagnoses } from '../../services/diagnosisService.js';
 import { formatDateTime, humanize } from '../../utils/formatters.js';
 
-const STATUS_STYLE = {
-  completed: 'text-green-700',
-  failed: 'text-red-700',
-  pending: 'text-gray-500',
-  processing: 'text-gray-500',
+const STATUS = {
+  completed: { icon: CheckCircle2, cls: 'text-emerald-700 dark:text-emerald-400', text: 'Done' },
+  failed: { icon: XCircle, cls: 'text-red-700 dark:text-red-400', text: 'Failed' },
+  pending: { icon: Clock, cls: 'text-slate-600 dark:text-slate-300', text: 'Waiting' },
+  processing: { icon: Clock, cls: 'text-slate-600 dark:text-slate-300', text: 'Checking' },
 };
 
 export default function DiagnosisHistory({ farmId, limit = 5, onSelect }) {
@@ -18,25 +20,38 @@ export default function DiagnosisHistory({ farmId, limit = 5, onSelect }) {
   });
 
   if (isLoading) return <Loader />;
-  if (!data?.length) return <EmptyState title="No checks yet" message="Your crop checks will appear here." />;
+  if (!data?.length) {
+    return <EmptyState icon={History} title="No crop checks yet" message="Your crop checks will show here." />;
+  }
 
   return (
-    <ul className="divide-y rounded-xl border bg-white">
-      {data.map((d) => (
-        <li key={d.id}>
-          <button onClick={() => onSelect?.(d.id)} className="flex min-h-[56px] w-full items-center justify-between px-4 py-2 text-left">
-            <span>
-              <span className="font-medium">
-                {d.status === 'completed' ? humanize(d.result?.name) : humanize(d.status)}
+    <ul className="list-card">
+      {data.map((d) => {
+        const s = STATUS[d.status] || STATUS.pending;
+        const Icon = s.icon;
+        return (
+          <li key={d.id}>
+            <button
+              onClick={() => onSelect?.(d.id)}
+              className="flex min-h-[80px] w-full items-center gap-4 px-4 py-3 text-left hover:bg-stone-50 dark:hover:bg-slate-700/50"
+            >
+              <CropIcon crop={d.crop} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-lg font-bold">
+                  {d.status === 'completed' ? humanize(d.result?.name) : s.text}
+                </span>
+                <span className="muted block text-base">
+                  {humanize(d.crop) || 'Crop not chosen'} - {formatDateTime(d.created_at)}
+                </span>
               </span>
-              <span className="block text-xs text-gray-500">
-                {humanize(d.crop) || 'Crop not set'} · {formatDateTime(d.created_at)}
+              <span className={`flex items-center gap-1 text-base font-semibold ${s.cls}`}>
+                <Icon className="h-6 w-6" aria-hidden="true" />
+                {s.text}
               </span>
-            </span>
-            <span className={`text-sm font-semibold ${STATUS_STYLE[d.status]}`}>{humanize(d.status)}</span>
-          </button>
-        </li>
-      ))}
+            </button>
+          </li>
+        );
+      })}
     </ul>
   );
 }

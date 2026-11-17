@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { MapPin, Save } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Alert from '../../components/common/Alert.jsx';
@@ -46,18 +47,18 @@ export default function FarmForm({ defaultValues, onSubmit, submitLabel = 'Save 
       <Select label="District" options={DISTRICTS} placeholder="Choose a district" error={errors.district?.message} {...register('district')} />
       <Select label="Soil type" options={SOIL_TYPES.map((s) => ({ value: s, label: humanize(s) }))} error={errors.soil_type?.message} {...register('soil_type')} />
       <Input label="Size (hectares)" type="number" step="0.1" inputMode="decimal" error={errors.size_ha?.message} {...register('size_ha')} />
-      <div className="rounded-lg bg-gray-50 p-3">
-        <p className="mb-2 text-sm text-gray-600">Location is needed for weather and planting advice.</p>
-        <Button variant="secondary" onClick={useMyLocation} loading={locating}>
+      <div className="rounded-xl bg-gray-50 dark:bg-slate-800/60 p-4">
+        <p className="mb-3 text-base text-gray-700 dark:text-slate-200">Location is needed for weather and planting advice.</p>
+        <Button variant="secondary" icon={MapPin} onClick={useMyLocation} loading={locating}>
           Use my location
         </Button>
-        {locationMsg && <p className="mt-2 text-sm text-gray-600">{locationMsg}</p>}
+        {locationMsg && <p className="mt-2 text-base text-gray-700 dark:text-slate-200">{locationMsg}</p>}
         <div className="mt-3 grid grid-cols-2 gap-3">
           <Input label="Latitude" type="number" step="any" error={errors.lat?.message} {...register('lat')} />
           <Input label="Longitude" type="number" step="any" error={errors.lng?.message} {...register('lng')} />
         </div>
       </div>
-      <Button type="submit" loading={isSubmitting} className="w-full">
+      <Button type="submit" icon={Save} loading={isSubmitting} className="w-full">
         {submitLabel}
       </Button>
     </form>

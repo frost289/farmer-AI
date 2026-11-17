@@ -3,13 +3,54 @@
 @tailwind utilities;
 
 @layer base {
-  html { -webkit-tap-highlight-color: transparent; }
-  body { @apply bg-gray-50 text-gray-900 antialiased; font-size: 16px; }
-  :focus-visible { @apply outline-2 outline-offset-2 outline-brand-600; }
+  html { -webkit-tap-highlight-color: transparent; color-scheme: light; }
+  html.dark { color-scheme: dark; }
+  body {
+    @apply bg-stone-50 text-slate-900 antialiased dark:bg-slate-900 dark:text-slate-100;
+    font-size: 18px;
+    line-height: 1.55;
+  }
+  h1, h2, h3, h4 { @apply text-slate-900 dark:text-white; }
+  :focus-visible { @apply outline outline-[3px] outline-offset-2 outline-emerald-600 dark:outline-emerald-400; }
 }
 
 @layer components {
-  .card { @apply rounded-xl border border-gray-200 bg-white p-4 shadow-sm; }
-  .label { @apply mb-1 block text-sm font-medium text-gray-700; }
-  .field { @apply block w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-base shadow-sm focus:border-brand-600 focus:ring-1 focus:ring-brand-600; }
+  .card { @apply rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800; }
+  .soft-panel { @apply rounded-2xl border border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40; }
+  .list-card { @apply divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white dark:divide-slate-700 dark:border-slate-700 dark:bg-slate-800; }
+  .muted { @apply text-slate-600 dark:text-slate-300; }
+  .page-title { @apply text-3xl font-extrabold tracking-tight; }
+  .section-title { @apply flex items-center gap-2 text-xl font-bold; }
+  .label { @apply mb-2 block text-base font-semibold text-slate-800 dark:text-slate-100; }
+  .field {
+    @apply block min-h-[56px] w-full rounded-xl border-2 border-stone-300 bg-white px-4 py-3 text-lg text-slate-900 shadow-sm
+      placeholder:text-slate-500 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/30
+      dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-400;
+  }
+  .icon-tile { @apply flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300; }
+  .th { @apply p-4 text-base font-semibold; }
+  .td { @apply p-4; }
+
+  /* 3D helpers (used by Tilt3D and Cube3D) */
+  .scene-3d { perspective: 900px; }
+  .preserve-3d { transform-style: preserve-3d; }
+  .tilt-card { transition: transform 150ms ease-out; transform-style: preserve-3d; will-change: transform; }
+  .depth-1 { transform: translateZ(24px); }
+  .cube { position: relative; transform-style: preserve-3d; }
+  .cube-face {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    border-radius: 18px; border: 2px solid rgb(167 243 208 / 0.6); color: #fff;
+    background: linear-gradient(145deg, #10b981, #047857);
+    box-shadow: inset 0 0 18px rgb(0 0 0 / 0.18);
+  }
+}
+
+/* Respect the "reduce motion" setting on phones and computers. */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

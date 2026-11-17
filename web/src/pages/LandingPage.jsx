@@ -1,63 +1,228 @@
-import { Link, Navigate } from 'react-router-dom';
-import { Sprout, CloudRain, ShieldCheck, ArrowRight, Sparkles } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth.js';
+import { ArrowUp, Bug, Camera, CloudRain, Plus, Sprout, Wheat } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import Cube3D from '../components/common/Cube3D.jsx';
+import Logo from '../components/common/Logo.jsx';
+import Reveal from '../components/common/Reveal.jsx';
+import ThemeToggle from '../components/common/ThemeToggle.jsx';
+import VoiceInput from '../features/diagnosis/VoiceInput.jsx';
+import { useAuth, useLanguage } from '../hooks/useAuth.js';
+import { askPublic } from '../services/publicService.js';
+import { MAX_QUESTION } from '../utils/constants.js';
+import { errorMessage } from '../utils/formatters.js';
 
-const FEATURES = [
-  { icon: Sprout, title: 'Check your crop', text: 'Send a photo or describe the problem. Get the disease or pest and how to treat it immediately.', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' },
-  { icon: CloudRain, title: 'Can I plant this week?', text: 'Accurate weather-based advice so your seeds do not rot or dry out in the soil.', color: 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300' },
-  { icon: ShieldCheck, title: 'What to plant', text: 'Expert crop and seed suggestions tailored precisely to your soil type and local region.', color: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300' },
+const SUGGESTIONS = [
+  { icon: Wheat, text: 'When should I plant maize this season?' },
+  { icon: Bug, text: 'How do I control fall armyworm on maize?' },
+  { icon: Sprout, text: 'Which crops grow well in sandy soil?' },
+  { icon: CloudRain, text: 'How can I protect my crops from drought?' },
 ];
+
+function Avatar() {
+  return (
+    <span
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white dark:bg-emerald-500 dark:text-slate-950"
+      aria-hidden="true"
+    >
+      <Sprout className="h-6 w-6" />
+    </span>
+  );
+}
+
+const linkBtn =
+  'inline-flex min-h-[48px] items-center rounded-xl px-4 text-lg font-semibold';
 
 export default function LandingPage() {
   const { user } = useAuth();
-  if (user) return <Navigate to="/dashboard" replace />;
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-stone-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <header className="mx-auto flex max-w-5xl items-center justify-between p-6">
-        <span className="flex items-center gap-2.5 text-2xl font-black text-emerald-700 dark:text-emerald-500">
-          <div className="rounded-xl bg-emerald-600 p-2 text-white shadow-md">
-            <Sprout className="h-6 w-6" />
-          </div>
-          FarmAI
-        </span>
-        <Link to="/login" className="rounded-xl bg-emerald-50 px-5 py-2.5 font-bold text-emerald-700 transition-all hover:bg-emerald-100 dark:bg-slate-800 dark:text-emerald-400">Log in</Link>
-      </header>
-      
-      <main className="mx-auto max-w-4xl px-4 py-16 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1.5 text-sm font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 mb-6 shadow-sm">
-          <Sparkles className="h-4 w-4" /> Smart Farming Made Simple
-        </div>
-        <h1 className="text-4xl font-black tracking-tight text-slate-900 sm:text-6xl dark:text-white">
-          Farming advice right in your pocket
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
-          FarmAI helps smallholder farmers diagnose crop diseases, decide precisely when to plant, and choose the most profitable crops with confidence.
-        </p>
-        
-        <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
-          <Link to="/register" className="flex items-center justify-center gap-2 min-h-[52px] rounded-2xl bg-emerald-600 px-8 py-3.5 text-lg font-bold text-white shadow-lg transition-all duration-300 hover:bg-emerald-700 hover:scale-105 active:scale-95">
-            Get started <ArrowRight className="h-5 w-5" />
-          </Link>
-          <Link to="/login" className="flex items-center justify-center gap-2 min-h-[52px] rounded-2xl border-2 border-emerald-600 px-8 py-3.5 text-lg font-bold text-emerald-700 transition-all duration-300 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-500 dark:hover:bg-slate-800">
-            Log in to account
-          </Link>
-        </div>
+  const { language } = useLanguage();
+  // Messages live only in this component's memory: a refresh or "New chat" clears them.
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [pending, setPending] = useState(false);
+  const bottomRef = useRef(null);
+  const inputRef = useRef(null);
 
-        <div className="mt-20 grid gap-6 sm:grid-cols-3">
-          {FEATURES.map((f) => {
-            const IconComp = f.icon;
-            return (
-              <div key={f.title} className="card text-left p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                <div className={`mb-4 inline-flex rounded-2xl p-3.5 ${f.color}`}>
-                  <IconComp className="h-7 w-7" />
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, pending]);
+
+  const resetHeight = () => {
+    if (inputRef.current) inputRef.current.style.height = 'auto';
+  };
+
+  const send = async (text) => {
+    const question = (text ?? input).trim();
+    if (!question || pending) return;
+    setInput('');
+    resetHeight();
+    setMessages((m) => [...m, { role: 'user', text: question }]);
+    setPending(true);
+    try {
+      const data = await askPublic({ question, language });
+      setMessages((m) => [...m, { role: 'assistant', text: data.answer }]);
+    } catch (err) {
+      setMessages((m) => [...m, { role: 'assistant', text: errorMessage(err), failed: true }]);
+    } finally {
+      setPending(false);
+      inputRef.current?.focus();
+    }
+  };
+
+  const onKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  };
+
+  const onInput = (e) => {
+    setInput(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 160)}px`;
+  };
+
+  const newChat = () => {
+    setMessages([]);
+    setInput('');
+    resetHeight();
+  };
+
+  const empty = messages.length === 0;
+
+  return (
+    <div className="flex h-[100dvh] flex-col bg-white dark:bg-slate-900">
+      <header className="flex items-center justify-between gap-2 border-b border-stone-200 px-4 py-3 dark:border-slate-700">
+        <Logo />
+        <div className="flex items-center gap-1 sm:gap-2">
+          <ThemeToggle />
+          {!empty && (
+            <button
+              onClick={newChat}
+              className={`${linkBtn} gap-2 text-slate-800 hover:bg-stone-100 dark:text-slate-100 dark:hover:bg-slate-800`}
+            >
+              <Plus className="h-6 w-6" aria-hidden="true" />
+              <span className="hidden sm:inline">New chat</span>
+            </button>
+          )}
+          {user ? (
+            <Link to="/dashboard" className={`${linkBtn} bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:text-slate-950`}>
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link to="/login" className={`${linkBtn} text-emerald-800 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-slate-800`}>
+                Log in
+              </Link>
+              <Link to="/register" className={`${linkBtn} bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:text-slate-950`}>
+                Sign up
+              </Link>
+            </>
+          )}
+        </div>
+      </header>
+
+      <main className="flex-1 overflow-y-auto">
+        <div className="mx-auto w-full max-w-3xl px-4 py-8">
+          {empty ? (
+            <div className="flex min-h-[55vh] flex-col items-center justify-center text-center">
+              <Reveal>
+                <div className="mb-10 flex justify-center">
+                  <Cube3D size={84} />
                 </div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">{f.title}</h2>
-                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{f.text}</p>
+              </Reveal>
+              <Reveal delay={100}>
+                <h1 className="page-title sm:text-4xl">How can I help your farm today?</h1>
+                <p className="muted mx-auto mt-3 max-w-md text-xl">
+                  Ask about crops, pests, diseases and planting time. You do not need to log in.
+                </p>
+              </Reveal>
+              <div className="mt-8 grid w-full gap-3 sm:grid-cols-2">
+                {SUGGESTIONS.map(({ icon: Icon, text }, i) => (
+                  <Reveal key={text} delay={200 + i * 80}>
+                    <button
+                      onClick={() => send(text)}
+                      className="flex min-h-[72px] w-full items-center gap-4 rounded-2xl border-2 border-stone-200 p-4 text-left text-lg transition hover:-translate-y-0.5 hover:border-emerald-600 hover:bg-emerald-50 dark:border-slate-700 dark:hover:border-emerald-400 dark:hover:bg-slate-800"
+                    >
+                      <span className="icon-tile">
+                        <Icon className="h-6 w-6" aria-hidden="true" />
+                      </span>
+                      {text}
+                    </button>
+                  </Reveal>
+                ))}
               </div>
-            );
-          })}
+              <Link to="/diagnosis" className="mt-6 inline-flex min-h-[48px] items-center gap-2 text-lg font-semibold text-emerald-800 dark:text-emerald-300">
+                <Camera className="h-6 w-6" aria-hidden="true" />
+                Check a crop photo (log in first)
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-6" aria-live="polite">
+              {messages.map((m, i) =>
+                m.role === 'user' ? (
+                  <div
+                    key={i}
+                    className="animate-fade-up ml-auto max-w-[85%] whitespace-pre-wrap rounded-2xl bg-emerald-600 px-4 py-3 text-lg text-white dark:bg-emerald-500 dark:text-slate-950"
+                  >
+                    {m.text}
+                  </div>
+                ) : (
+                  <div key={i} className="animate-fade-up flex gap-3">
+                    <Avatar />
+                    <p className={`max-w-[88%] whitespace-pre-wrap pt-1.5 text-lg ${m.failed ? 'text-red-700 dark:text-red-300' : ''}`}>{m.text}</p>
+                  </div>
+                ),
+              )}
+              {pending && (
+                <div className="flex items-center gap-3">
+                  <Avatar />
+                  <span className="flex gap-1.5" role="status" aria-label="FarmAI is writing">
+                    <span className="h-3 w-3 animate-bounce rounded-full bg-emerald-600 dark:bg-emerald-400" />
+                    <span className="h-3 w-3 animate-bounce rounded-full bg-emerald-600 [animation-delay:150ms] dark:bg-emerald-400" />
+                    <span className="h-3 w-3 animate-bounce rounded-full bg-emerald-600 [animation-delay:300ms] dark:bg-emerald-400" />
+                  </span>
+                </div>
+              )}
+              <div ref={bottomRef} />
+            </div>
+          )}
         </div>
       </main>
+
+      <footer className="border-t border-stone-200 bg-white px-4 pb-3 pt-3 dark:border-slate-700 dark:bg-slate-900">
+        <div className="mx-auto w-full max-w-3xl">
+          <div className="flex items-end gap-2 rounded-3xl border-2 border-stone-300 bg-white p-2 shadow-sm focus-within:border-emerald-600 dark:border-slate-600 dark:bg-slate-800 dark:focus-within:border-emerald-400">
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={onInput}
+              onKeyDown={onKeyDown}
+              rows={1}
+              maxLength={MAX_QUESTION}
+              placeholder="Ask FarmAI anything about farming..."
+              aria-label="Your question"
+              className="max-h-40 flex-1 resize-none bg-transparent px-3 py-3 text-lg text-slate-900 outline-none placeholder:text-slate-500 dark:text-slate-100 dark:placeholder:text-slate-400"
+            />
+            <VoiceInput compact onText={(t) => setInput((v) => `${v} ${t}`.trim())} />
+            <button
+              onClick={() => send()}
+              disabled={!input.trim() || pending}
+              aria-label="Send question"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white transition hover:bg-emerald-700 disabled:bg-stone-300 disabled:text-stone-500 dark:bg-emerald-500 dark:text-slate-950 dark:disabled:bg-slate-700 dark:disabled:text-slate-500"
+            >
+              <ArrowUp className="h-6 w-6" aria-hidden="true" />
+            </button>
+          </div>
+          <p className="muted mt-2 text-center text-sm">
+            Chats are not saved. FarmAI can make mistakes. For serious crop problems, ask your extension officer.{' '}
+            {!user && (
+              <Link to="/register" className="font-semibold text-emerald-800 underline dark:text-emerald-300">
+                Sign up to save your farms and check crop photos.
+              </Link>
+            )}
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

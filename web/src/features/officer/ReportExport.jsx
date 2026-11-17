@@ -1,3 +1,4 @@
+import { Download } from 'lucide-react';
 import Button from '../../components/common/Button.jsx';
 
 const HEADERS = ['disease', 'crop', 'district', 'case_count', 'period_start', 'period_end'];
@@ -14,8 +15,8 @@ export default function ReportExport({ rows = [] }) {
     URL.revokeObjectURL(url);
   };
   return (
-    <Button variant="secondary" onClick={download} disabled={!rows.length}>
-      ⬇ Download CSV
+    <Button variant="secondary" icon={Download} onClick={download} disabled={!rows.length}>
+      Download CSV
     </Button>
   );
 }

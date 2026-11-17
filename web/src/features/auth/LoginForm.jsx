@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
+import { LogIn } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Alert from '../../components/common/Alert.jsx';
@@ -35,12 +36,12 @@ export default function LoginForm() {
       <Alert type="error">{error}</Alert>
       <Input label="Phone number" type="tel" inputMode="tel" autoComplete="tel" placeholder="+265999000111" error={errors.phone?.message} {...register('phone')} />
       <Input label="Password" type="password" autoComplete="current-password" error={errors.password?.message} {...register('password')} />
-      <Button type="submit" loading={isSubmitting} className="w-full">
+      <Button type="submit" icon={LogIn} loading={isSubmitting} className="w-full">
         Log in
       </Button>
-      <p className="text-center text-sm">
+      <p className="text-center text-base">
         New to FarmAI?{' '}
-        <Link to="/register" className="font-semibold text-brand-700">
+        <Link to="/register" className="font-semibold text-brand-700 dark:text-emerald-300">
           Create an account
         </Link>
       </p>

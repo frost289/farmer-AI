@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
+import { UserPlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import Alert from '../../components/common/Alert.jsx';
@@ -52,12 +53,12 @@ export default function RegisterForm() {
         ]}
         {...register('language')}
       />
-      <Button type="submit" loading={isSubmitting} className="w-full">
+      <Button type="submit" icon={UserPlus} loading={isSubmitting} className="w-full">
         Create account
       </Button>
-      <p className="text-center text-sm">
+      <p className="text-center text-base">
         Already registered?{' '}
-        <Link to="/login" className="font-semibold text-brand-700">
+        <Link to="/login" className="font-semibold text-brand-700 dark:text-emerald-300">
           Log in
         </Link>
       </p>

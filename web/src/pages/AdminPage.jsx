@@ -29,12 +29,12 @@ export default function AdminPage() {
 
       {stats.data && (
         <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="card"><p className="text-sm text-gray-500">Farms</p><p className="text-2xl font-bold">{stats.data.farms}</p></div>
+          <div className="card"><p className="text-sm text-gray-500 dark:text-slate-400">Farms</p><p className="text-2xl font-bold">{stats.data.farms}</p></div>
           {Object.entries(stats.data.users_by_role).map(([role, n]) => (
-            <div key={role} className="card"><p className="text-sm text-gray-500">{humanize(role)}s</p><p className="text-2xl font-bold">{n}</p></div>
+            <div key={role} className="card"><p className="text-sm text-gray-500 dark:text-slate-400">{humanize(role)}s</p><p className="text-2xl font-bold">{n}</p></div>
           ))}
           {Object.entries(stats.data.diagnoses_by_status).map(([status, n]) => (
-            <div key={status} className="card"><p className="text-sm text-gray-500">Checks {status}</p><p className="text-2xl font-bold">{n}</p></div>
+            <div key={status} className="card"><p className="text-sm text-gray-500 dark:text-slate-400">Checks {status}</p><p className="text-2xl font-bold">{n}</p></div>
           ))}
         </section>
       )}
@@ -47,9 +47,9 @@ export default function AdminPage() {
         ) : users.error ? (
           <Alert type="error">{errorMessage(users.error)}</Alert>
         ) : (
-          <div className="overflow-x-auto rounded-xl border bg-white">
+          <div className="overflow-x-auto rounded-xl border bg-white dark:bg-slate-800">
             <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 text-gray-600">
+              <thead className="bg-gray-50 dark:bg-slate-800/60 text-gray-600 dark:text-slate-300">
                 <tr><th className="p-3">Name</th><th className="p-3">Phone</th><th className="p-3">District</th><th className="p-3">Role</th></tr>
               </thead>
               <tbody>
@@ -61,7 +61,7 @@ export default function AdminPage() {
                     <td className="p-3">
                       <select
                         aria-label={`Role for ${u.name}`}
-                        className="rounded border border-gray-300 px-2 py-1"
+                        className="rounded border border-gray-300 dark:border-slate-600 px-2 py-1"
                         value={u.role}
                         disabled={u.id === me.id || roleMutation.isPending}
                         onChange={(e) => roleMutation.mutate({ id: u.id, role: e.target.value })}
@@ -77,7 +77,7 @@ export default function AdminPage() {
         )}
         <div className="flex items-center justify-between">
           <Button variant="secondary" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Previous</Button>
-          <span className="text-sm text-gray-600">Page {page} of {pages}</span>
+          <span className="text-sm text-gray-600 dark:text-slate-300">Page {page} of {pages}</span>
           <Button variant="secondary" disabled={page >= pages} onClick={() => setPage((p) => p + 1)}>Next</Button>
         </div>
       </section>

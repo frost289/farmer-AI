@@ -35,7 +35,7 @@ export default function ProfilePage() {
     <div className="max-w-md space-y-6">
       <h1 className="text-2xl font-bold">My profile</h1>
       <section className="card space-y-4">
-        <p className="text-sm text-gray-600">Phone: {user.phone} · Role: {humanize(user.role)}</p>
+        <p className="text-sm text-gray-600 dark:text-slate-300">Phone: {user.phone} · Role: {humanize(user.role)}</p>
         <Input label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <Select label="Language" options={[{ value: 'en', label: 'English' }, { value: 'ny', label: 'Chichewa' }]} value={form.language} onChange={(e) => setForm({ ...form, language: e.target.value })} />
         <Select label="District" options={DISTRICTS} placeholder="Choose a district" value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value })} />
