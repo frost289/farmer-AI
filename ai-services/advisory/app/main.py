@@ -14,6 +14,11 @@ app.include_router(planting.router, prefix="/api/v1")
 app.include_router(recommend.router, prefix="/api/v1")
 
 
+@app.get("/")
+def read_root():
+    return {"service": "FarmAI Advisory Service", "status": "online", "docs": "/docs"}
+
+
 @app.get("/health")
 def health():
     return {"status": "ok", "model_version": MODEL_VERSION}
