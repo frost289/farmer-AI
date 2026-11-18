@@ -132,16 +132,20 @@ def _predict_onnx(
     logits = logits / model.temperature
     taxonomy = {item["label"]: item for item in load_taxonomy()}
     allowed = {item["label"] for item in labels_for(crop)}
-    masked = np.where([label in allowed for label in model.labels], logits, -np.inf)
-    if np.isinf(masked).all():  # crop shares no label with the model: ignore the crop
-        masked = logits
-    probs = _softmax(masked)
+    usable = [label in allowed for label in model.labels]
+    # The model must know this crop's diseases, not only "healthy". Otherwise masking would
+    # answer "healthy" for any photo of a crop it was never trained on.
+    crop_supported = not crop or sum(usable) >= 2
+    probs = _softmax(np.where(usable, logits, -np.inf) if crop_supported else logits)
     order = np.argsort(-probs)[:MAX_PREDICTIONS]
+    cap = (
+        1.0 if crop_supported else STUB_MAX_CONFIDENCE
+    )  # unsupported crop: always low_confidence
     return [
         {
             "label": model.labels[i],
             "type": taxonomy[model.labels[i]]["type"],
-            "confidence": round(float(probs[i]), 4),
+            "confidence": round(min(float(probs[i]), cap), 4),
         }
         for i in order
         if probs[i] > 0

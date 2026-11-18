@@ -29,22 +29,39 @@ Docker: the image does not contain weights. Mount them: `-v ./models:/app/models
 
 ## Train a classifier
 
-1. Arrange photos as `data/train/<label>/*.jpg` (and optionally `data/val/<label>/`). Folder names must be labels from `docs/label-taxonomy.json`. Both folders are git-ignored.
-2. ```bash
-   pip install -r requirements-train.txt
-   python training/train_classifier.py --data data --out models --version v0.2.0
-   python training/evaluate.py --data data/test            # held-out photos, never used in training
-   ```
-3. `models/classifier.onnx` + `models/labels.json` appear. Restart the service.
+Datasets are already wired in (`training/datasets.json`): KaraAgro Maize (healthy, fall armyworm, maize streak virus),
+the Tanzania maize set (more streak virus and healthy), and Cassava Uganda (cassava mosaic, healthy). Covered labels:
+`healthy`, `fall_armyworm`, `maize_streak_virus`, `cassava_mosaic_disease`. **Not covered yet:** `maize_gray_leaf_spot`,
+`groundnut_rosette`, `tomato_late_blight` (they need your own photos or another source).
+
+Easiest: open `training/train_colab.ipynb` in Google Colab (GPU) and run the cells. Or by hand:
+
+```bash
+# 1. get the data (KaraAgro and cassava by hand, see the "get" field in datasets.json)
+python training/download_data.py --source tanzania_maize --extract
+# 2. check, then build data/train, data/val, data/test
+python training/prepare_data.py --dry-run
+python training/prepare_data.py
+# 3. train, then test on photos the model never saw
+pip install -r requirements-train.txt
+python training/train_classifier.py --data data --out models --version v0.2.0
+python training/evaluate.py --data data/test
+```
+`models/classifier.onnx` + `models/labels.json` appear. Restart the service and check `/health` says `onnx`.
+
+`prepare_data.py` removes exact duplicates, groups near-identical photos and puts each group in only one split (so a leaf
+never sits in both train and test), drops photos whose near-duplicates carry different labels, caps each source so one big
+dataset cannot dominate, and writes `data/manifest.csv` (where every image came from) and `data/report.json`.
 
 Training uses a MobileNetV3-Large fine-tune, class-balanced sampling, field-photo augmentation, and temperature
 scaling so confidence is calibrated. The exported ONNX is checked against PyTorch before it is written.
 
-Data advice (important for honest accuracy):
-- Public lab-style datasets look much cleaner than farmers' phone photos. Add real Malawi field photos, with backgrounds, glare and mixed leaves, especially for `maize_streak_virus`, `fall_armyworm` and `groundnut_rosette`. I could not verify which public datasets cover each label, so check coverage and licences before relying on any.
-- Put the **same plant/leaf in one split only** (provide `data/val` yourself). Random splits of near-duplicate photos give inflated scores.
+Honest expectations:
+- **Check each dataset's licence** on its download page before using or redistributing it, and keep its citation for the research report.
+- These datasets come from Uganda, Tanzania and similar, not Malawi. Their test score does not prove field performance: collect a few dozen real Malawian photos per label as a separate final test.
 - Keep a `healthy` class with varied backgrounds, or the model will call every photo a disease.
-- Run `evaluate.py` with and without `--crop`, and look at the `low_confidence` rate and accuracy-when-confident, not only overall accuracy.
+- Run `evaluate.py` with and without `--crop`; judge by per-class recall, the `low_confidence` rate and accuracy when confident, not only overall accuracy.
+- If the model has no disease labels for the farm's crop (for example cassava before cassava data is added), the service caps confidence below 0.5, so the api shows "consult an extension officer".
 
 ## Behaviour notes
 

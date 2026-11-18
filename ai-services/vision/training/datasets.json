@@ -1,0 +1,55 @@
+{
+  "note": "Public datasets mapped onto docs/label-taxonomy.json. 'contains' tokens are matched (lowercase) against the folder path of each image, first rule wins; unmatched folders are skipped. VERIFY each dataset's licence on its download page before using it, and keep citations for the research report. Run prepare_data.py --dry-run first to check the folder-to-label mapping.",
+  "sources": [
+    {
+      "id": "karaagro_maize",
+      "title": "KaraAgro AI Maize Dataset (Makerere AI Lab and partners)",
+      "dir": "karaagro_maize",
+      "get": "Search 'KaraAgro AI Maize Dataset' on Harvard Dataverse, download, extract into data/raw/karaagro_maize/",
+      "max_per_label": 4000,
+      "rules": [
+        { "contains": ["healthy"], "label": "healthy" },
+        { "contains": ["armyworm", "fall", "faw"], "label": "fall_armyworm" },
+        { "contains": ["streak", "msv"], "label": "maize_streak_virus" }
+      ]
+    },
+    {
+      "id": "tanzania_maize",
+      "title": "Labeled dataset of healthy and diseased maize from Tanzania (NM-AIST, TARI)",
+      "dir": "tanzania_maize",
+      "zenodo": { "record": "15685236", "default_files": ["healthy1.zip", "msv1.zip"] },
+      "get": "python training/download_data.py --source tanzania_maize --extract",
+      "max_per_label": 2500,
+      "rules": [
+        { "contains": ["healthy"], "label": "healthy" },
+        { "contains": ["msv"], "label": "maize_streak_virus" }
+      ]
+    },
+    {
+      "id": "cassava_uganda",
+      "title": "Cassava leaf images, Uganda (Makerere AI Lab / NaCRRI, iCassava 2019), folder layout",
+      "dir": "cassava_uganda",
+      "get": "Download from the iCassava 2019 repository (links on the competition page) and extract into data/raw/cassava_uganda/ (one folder per class)",
+      "max_per_label": 3000,
+      "rules": [
+        { "contains": ["healthy"], "label": "healthy" },
+        { "contains": ["cmd", "mosaic"], "label": "cassava_mosaic_disease" }
+      ]
+    },
+    {
+      "id": "cassava_kaggle",
+      "title": "Cassava Leaf Disease Classification (Kaggle), CSV layout. Use this OR cassava_uganda, not both",
+      "dir": "cassava_kaggle",
+      "get": "Download the Kaggle competition data into data/raw/cassava_kaggle/ (train.csv + train_images/). Check label_num_to_disease_map.json: the values below assume 3 = mosaic, 4 = healthy",
+      "max_per_label": 3000,
+      "enabled": false,
+      "csv": {
+        "file": "train.csv",
+        "image_dir": "train_images",
+        "image_col": "image_id",
+        "label_col": "label",
+        "values": { "3": "cassava_mosaic_disease", "4": "healthy" }
+      }
+    }
+  ]
+}

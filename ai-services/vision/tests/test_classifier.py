@@ -98,10 +98,11 @@ def test_onnx_output_follows_the_contract(onnx_model):
     assert sum(p["confidence"] for p in result) <= 1.0001
 
 
-def test_crop_masking_removes_labels_for_other_crops(onnx_model):
-    onnx_model()
-    result = predict(YELLOW, crop="cassava")  # no maize label is valid for cassava
-    assert [p["label"] for p in result] == ["healthy"]
+def test_crop_the_model_was_not_trained_on_is_never_confident(onnx_model):
+    onnx_model()  # knows maize diseases and "healthy", but no cassava disease
+    result = predict(GREEN, crop="cassava")
+    assert result[0]["confidence"] <= 0.49  # the api must flag it low_confidence
+    assert len(result) > 1  # not collapsed to a lone "healthy" answer
 
 
 def test_crop_masking_keeps_the_crops_own_labels(onnx_model):
