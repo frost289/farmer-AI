@@ -11,12 +11,14 @@ import recommendationsRoutes from './modules/recommendations/recommendations.rou
 import outbreaksRoutes from './modules/outbreaks/outbreaks.routes.js';
 import alertsRoutes from './modules/alerts/alerts.routes.js';
 import adminRoutes from './modules/admin/admin.routes.js';
+import publicRoutes from './modules/public/public.routes.js';
 
 const router = Router();
 
 router.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
 router.use('/auth', authRoutes); // auth.routes.js applies its own rate limiter
+router.use('/public', publicRoutes); // no login needed (see public.routes.js)
 router.use('/users', authenticate, usersRoutes);
 router.use('/farms/:id/plantings', authenticate, plantingsRoutes);
 router.use('/farms', authenticate, farmsRoutes);
