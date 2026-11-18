@@ -9,4 +9,7 @@ router = APIRouter(prefix="/ai/v1/advisory", dependencies=[Depends(verify_intern
 
 @router.post("/query", response_model=QueryResponse)
 def query(body: QueryRequest):
-    return answer_question(body.question, body.language, body.context.model_dump())
+    # Safely handle optional context to avoid NoneType attribute errors
+    context_data = body.context.model_dump() if body.context else {}
+    
+    return answer_question(body.question, body.language, context_data)
