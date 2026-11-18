@@ -1,27 +1,26 @@
-"""Damage segmentation.
+"""Damage segmentation: PNG mask plus damaged-area percentage.
 
-STUB: colour-threshold mask from severity.py. Member 4: replace with Segment Anything (SAM)
-or a trained segmentation model; keep the return shape.
+Uses the colour analysis in severity.py. To use Segment Anything or a trained U-Net later,
+return the same dict from `segment` (damaged_area_pct, mask as bool array, mask_png_base64).
 """
+
 import base64
 import io
 
 import numpy as np
 from PIL import Image
 
-from app.services.severity import damage_mask
+from app.services.severity import LeafAnalysis, analyze
 
 
-def segment(img: Image.Image) -> dict:
-    small = img.copy()
-    small.thumbnail((320, 320))
-    damaged, healthy = damage_mask(small)
-    plant = int(damaged.sum() + healthy.sum())
-    pct = round(float(damaged.sum()) / plant * 100, 1) if plant >= 50 else 0.0
+def segment(img: Image.Image, analysis: LeafAnalysis | None = None) -> dict:
+    result = analysis or analyze(img)
     buf = io.BytesIO()
-    Image.fromarray((damaged * 255).astype(np.uint8), mode="L").save(buf, format="PNG")
+    Image.fromarray((result.damaged * 255).astype(np.uint8), mode="L").save(
+        buf, format="PNG"
+    )
     return {
-        "damaged_area_pct": pct,
-        "mask": damaged,
+        "damaged_area_pct": result.damaged_pct,
+        "mask": result.damaged,
         "mask_png_base64": base64.b64encode(buf.getvalue()).decode("ascii"),
     }

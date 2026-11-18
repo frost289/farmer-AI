@@ -1,0 +1,5 @@
+# Training only (Colab or a GPU box). Not installed in the service image.
+-r requirements.txt
+torch
+torchvision
+onnx
