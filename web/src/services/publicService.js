@@ -1,5 +1,5 @@
-import { api, unwrap } from './apiClient.js';
+Import { api, unwrap } from './apiClient.js';
 
-/** Ask FarmAI. */
-export const askQuestion = ({ farm_id, question, language }) =>
-  api.post('/advisory/ask', { farm_id, question, language }).then(unwrap);
+/** Ask FarmAI without logging in. Nothing is saved on the server. */
+export const askPublic = ({ question, language }) =>
+  api.post('/public/ask', { question, language }).then(unwrap);
