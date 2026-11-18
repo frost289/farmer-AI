@@ -1,4 +1,5 @@
 import { env } from '../config/env.js';
+import { logger } from '../config/logger.js';
 import { ApiError } from '../utils/ApiError.js';
 
 class AiHttpError extends Error {
@@ -50,6 +51,15 @@ export async function aiRequest({ baseUrl, path, method = 'POST', ...opts }) {
       const { code, message, details } = err.body.error;
       throw new ApiError(err.status, code, message, details);
     }
+    // Log the real reason (never the key) so it shows up in the Render logs.
+    logger.warn('ai request failed', {
+      request_id: opts.requestId,
+      url,
+      status: err.status,
+      error: err.message,
+      cause: err.cause?.code || err.cause?.message,
+      body: err.body ? JSON.stringify(err.body).slice(0, 300) : undefined,
+    });
     throw new ApiError(503, 'AI_UNAVAILABLE', 'The AI service is not available right now.');
   }
 }
