@@ -22,7 +22,7 @@ export const registerSchema = z.object({
 
 const optionalNumber = (min, max, msg) =>
   z.preprocess(
-    (v) => (v === '' || v == null || Number.isNaN(v) ? undefined : Number(v)),
+    (v) => (v === '' || v === null || v === undefined || Number.isNaN(v) ? undefined : Number(v)),
     z.number().min(min, msg).max(max, msg).optional(),
   );
 
