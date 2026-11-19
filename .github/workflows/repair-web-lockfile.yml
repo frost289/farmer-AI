@@ -1,0 +1,32 @@
+name: Temporary web lockfile repair
+on:
+  push:
+    branches: [fix/web-auth-cache-isolation]
+    paths: ['.github/workflows/repair-web-lockfile.yml']
+permissions:
+  contents: write
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/web-auth-cache-isolation
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Regenerate npm lockfile without running package scripts
+        working-directory: web
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Commit regenerated lockfile
+        run: |
+          if git diff --quiet -- web/package-lock.json; then
+            echo "Lockfile is already consistent."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add web/package-lock.json
+          git commit -m "fix(web): regenerate npm lockfile"
+          git push origin HEAD:fix/web-auth-cache-isolation
