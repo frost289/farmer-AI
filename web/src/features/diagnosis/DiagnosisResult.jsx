@@ -24,7 +24,7 @@ function TreatmentList({ title, items }) {
 }
 
 export default function DiagnosisResult({ diagnosis, timedOut = false }) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   if (!diagnosis) return null;
   if (diagnosis.status === 'failed') {
     return (
