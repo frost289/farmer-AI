@@ -24,7 +24,7 @@ function TreatmentList({ title, items }) {
 }
 
 export default function DiagnosisResult({ diagnosis, timedOut = false }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   if (!diagnosis) return null;
   if (diagnosis.status === 'failed') {
     return (
@@ -67,6 +67,7 @@ export default function DiagnosisResult({ diagnosis, timedOut = false }) {
         </div>
       )}
       {r.low_confidence && <Alert type="warning">{t('diagnosis.low_confidence')}</Alert>}
+      {language === 'ny' && <Alert type="info">{t('ai.english_fallback')}</Alert>}
       <TreatmentList title={t('diagnosis.organic')} items={treatment.organic} />
       <TreatmentList title={t('diagnosis.chemical')} items={treatment.chemical} />
       <TreatmentList title={t('diagnosis.prevention')} items={treatment.prevention} />
