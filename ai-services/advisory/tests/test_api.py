@@ -16,12 +16,16 @@ def test_requires_internal_key():
     assert r.json()["error"]["code"] == "UNAUTHORIZED"
 
 
-def test_query_returns_answer():
+def test_query_reports_actual_language_and_fallback():
     r = client.post("/ai/v1/advisory/query", headers=H, json={"question": "When should I weed maize?", "language": "en"})
     assert r.status_code == 200
     assert r.json()["answer"]
     assert r.json()["language"] == "en"
     assert r.json()["language_fallback"] is False
+
+    ny = client.post("/ai/v1/advisory/query", headers=H, json={"question": "Kodi ndipalire liti?", "language": "ny"})
+    assert ny.json()["language"] == "en"
+    assert ny.json()["language_fallback"] is True
 
 
 def test_validation_error_uses_envelope():
