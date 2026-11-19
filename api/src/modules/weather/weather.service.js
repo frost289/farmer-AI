@@ -22,7 +22,7 @@ export async function getForecast(lat, lng) {
 
 export async function getFarmWeather(farmId, user) {
   const farm = await getAccessibleFarm(farmId, user);
-  if (farm.lat == null || farm.lng == null) {
+  if (farm.lat === null || farm.lat === undefined || farm.lng === null || farm.lng === undefined) {
     throw ApiError.badRequest('Set the farm location (lat, lng) to use weather features', [
       { field: 'farm_id', issue: 'Farm has no location' },
     ]);
