@@ -1,8 +1,8 @@
 # Chichewa AI Response Contract Proposal
 
-**Status: Discussion draft — not an approved API contract.**
+**Status: Team agreement reported; implementation in progress.**
 
-This proposal is for Members 1–4 to review before any shared response shape or taxonomy is changed. It follows the existing rule in `SHARED_DATA_FIELDS.md`: shared fields and enums require approval from every affected member.
+The team has agreed to the response-language and fallback approach. The additive metadata changes are being implemented on the feature branch. Chichewa taxonomy values and safety-critical translations remain subject to fluent-speaker review.
 
 ## Goal
 
@@ -37,7 +37,7 @@ For discussion, consider adding the following fields to AI-generated text respon
 - `language`: language actually used, `en` or `ny`.
 - `language_fallback`: boolean indicating that the service had to return English because it could not safely produce reviewed Chichewa content.
 
-This is additive but still requires agreement from API, web, advisory, and any affected vision/database owners before implementation. The web app should show a clear fallback notice when `language_fallback` is true, rather than assuming the requested language was delivered.
+The agreed metadata is additive. The web app shows a clear fallback notice when `language_fallback` is true, rather than assuming the requested language was delivered.
 
 ## Safety and quality rules
 
@@ -50,7 +50,7 @@ This is additive but still requires agreement from API, web, advisory, and any a
 
 ## Suggested implementation sequence
 
-1. Members 1–4 agree on the request/response fields and ownership.
+1. Team agreement on the request/response fields and ownership has been reported.
 2. Members 3 and 4 propose Chichewa taxonomy display names and arrange fluent-speaker review.
 3. Member 3 implements language-aware advisory, treatment, planting, and recommendation text while preserving agreed response shapes.
 4. Member 1 updates API validation/forwarding and integration tests.
@@ -59,4 +59,4 @@ This is additive but still requires agreement from API, web, advisory, and any a
 
 ## Current limitation
 
-The current advisory service README explicitly documents English fallback for Chichewa. The current taxonomy contains `ny: null` for its initial disease and pest labels. The frontend notices added in this branch are temporary transparency measures; they are not a substitute for language-aware AI responses or reviewed translations.
+The advisory service currently returns English for Chichewa requests and marks this with `language: "en"` and `language_fallback: true`. The taxonomy still contains `ny: null` for its initial disease and pest labels. This implementation provides transparent fallback handling; it does not yet provide translated AI advice or reviewed Chichewa taxonomy labels.
