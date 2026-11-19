@@ -1,0 +1,104 @@
+name: CI Integration
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and start the full development stack
+        run: docker compose up --build -d
+
+      - name: Wait for services
+        run: |
+          set -eu
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://localhost:4000/health >/dev/null \
+              && curl --fail --silent http://localhost:8001/health >/dev/null \
+              && curl --fail --silent http://localhost:8002/health >/dev/null \
+              && curl --fail --silent http://localhost:5173/ >/dev/null; then
+              echo "API, advisory, vision, and web are responding."
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose ps
+          docker compose logs --no-color --tail=120
+          echo "Services did not become ready in time."
+          exit 1
+
+      - name: Test registration, authentication, profile, and farm API
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="http://localhost:4000/api/v1"
+          phone="+265999888777"
+          password="TestPass123!"
+
+          register="$(curl --fail --silent --show-error \
+            -H "Content-Type: application/json" \
+            -d "{\"name\":\"CI Farmer\",\"phone\":\"$phone\",\"password\":\"$password\",\"role\":\"farmer\",\"language\":\"ny\"}" \
+            "$base/auth/register")"
+          access="$(jq -er '.data.access_token' <<<"$register")"
+          refresh="$(jq -er '.data.refresh_token' <<<"$register")"
+          test "$(jq -r '.data.user.language' <<<"$register")" = "ny"
+
+          profile="$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer $access" "$base/users/me")"
+          test "$(jq -r '.data.phone' <<<"$profile")" = "$phone"
+          test "$(jq -r '.data.language' <<<"$profile")" = "ny"
+
+          updated="$(curl --fail --silent --show-error -X PUT \
+            -H "Authorization: Bearer $access" \
+            -H "Content-Type: application/json" \
+            -d '{"language":"en","district":"Lilongwe"}' "$base/users/me")"
+          test "$(jq -r '.data.language' <<<"$updated")" = "en"
+          test "$(jq -r '.data.district' <<<"$updated")" = "Lilongwe"
+
+          farm="$(curl --fail --silent --show-error -X POST \
+            -H "Authorization: Bearer $access" \
+            -H "Content-Type: application/json" \
+            -d '{"name":"CI Test Farm","district":"Lilongwe","lat":-13.96,"lng":33.78,"soil_type":"loam","size_ha":1.5}' \
+            "$base/farms")"
+          farm_id="$(jq -er '.data.id' <<<"$farm")"
+          test "$(jq -r '.data.name' <<<"$farm")" = "CI Test Farm"
+
+          farms="$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer $access" "$base/farms")"
+          jq -e --arg id "$farm_id" '.data | any(.id == $id)' <<<"$farms" >/dev/null
+
+          refreshed="$(curl --fail --silent --show-error -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"refresh_token\":\"$refresh\"}" "$base/auth/refresh")"
+          new_access="$(jq -er '.data.access_token' <<<"$refreshed")"
+          curl --fail --silent --show-error \
+            -H "Authorization: Bearer $new_access" "$base/users/me" >/dev/null
+
+          curl --fail --silent --show-error -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"refresh_token\":\"$refresh\"}" "$base/auth/logout" >/dev/null
+
+          status="$(curl --silent --output /tmp/refresh-after-logout.json --write-out '%{http_code}' \
+            -H "Content-Type: application/json" \
+            -d "{\"refresh_token\":\"$refresh\"}" "$base/auth/refresh")"
+          test "$status" = "401"
+          test "$(jq -r '.error.code' /tmp/refresh-after-logout.json)" = "UNAUTHORIZED"
+
+          echo "Registration, login session, profile update, farm create/list, token refresh, and logout checks passed."
+
+      - name: Show service logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail=200
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v
