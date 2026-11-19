@@ -5,11 +5,13 @@ import Button from '../components/common/Button.jsx';
 import Loader from '../components/common/Loader.jsx';
 import FarmSelect from '../features/farms/FarmSelect.jsx';
 import CropRecommendation from '../features/recommendations/CropRecommendation.jsx';
+import { useLanguage } from '../hooks/useAuth.js';
 import { getCropRecommendations } from '../services/advisoryService.js';
 import { listFarms } from '../services/farmService.js';
 import { errorMessage } from '../utils/formatters.js';
 
 export default function RecommendationsPage() {
+  const { t } = useLanguage();
   const [farmId, setFarmId] = useState('');
   const [requested, setRequested] = useState('');
 
@@ -25,12 +27,12 @@ export default function RecommendationsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">What should I plant?</h1>
+      <h1 className="text-2xl font-bold">{t('recommendations.title')}</h1>
       <section className="card space-y-4">
         {farms.isLoading ? <Loader /> : <FarmSelect farms={farms.data} value={farmId} onChange={(v) => { setFarmId(v); setRequested(''); }} />}
-        {farmId && !hasLocation && <Alert type="warning">Add this farm&apos;s location first so we can use the weather and soil of your area.</Alert>}
+        {farmId && !hasLocation && <Alert type="warning">{t('recommendations.no_location')}</Alert>}
         <Button className="w-full" disabled={!farmId || !hasLocation} loading={recs.isFetching} onClick={() => setRequested(farmId)}>
-          Get recommendations
+          {t('recommendations.get')}
         </Button>
       </section>
       {recs.error && <Alert type="error">{errorMessage(recs.error)}</Alert>}
