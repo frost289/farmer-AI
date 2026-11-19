@@ -1,4 +1,5 @@
 """Image loading and quality checks. These are real (not stubs)."""
+
 import io
 
 import numpy as np
@@ -44,6 +45,10 @@ def check_quality(img: Image.Image) -> dict:
         issues.append("too_dark")
     if mean > BRIGHT_MEAN:
         issues.append("too_bright")
-    if gray.shape[0] > 2 and gray.shape[1] > 2 and _laplacian_variance(gray) < BLUR_VARIANCE:
+    if (
+        gray.shape[0] > 2
+        and gray.shape[1] > 2
+        and _laplacian_variance(gray) < BLUR_VARIANCE
+    ):
         issues.append("blurry")
     return {"usable": not issues, "issues": issues}

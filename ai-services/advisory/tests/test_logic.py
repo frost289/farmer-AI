@@ -1,4 +1,5 @@
 """Pure-logic tests (no FastAPI needed)."""
+
 from app.services import crop_recommender, planting_service, treatment_service
 
 DRY = [{"date": f"2026-11-{16 + i}", "rain_mm": 0, "temp_c": 29} for i in range(7)]
@@ -19,7 +20,9 @@ def test_established_rain_means_plant():
 
 
 def test_waterlogging_not_recommended():
-    assert planting_service.assess("maize", "clay", FLOOD)["verdict"] == "not_recommended"
+    assert (
+        planting_service.assess("maize", "clay", FLOOD)["verdict"] == "not_recommended"
+    )
 
 
 def test_no_forecast_is_low_confidence():
@@ -30,7 +33,9 @@ def test_no_forecast_is_low_confidence():
 def test_recommendations_sorted_and_scored():
     recs = crop_recommender.recommend("loam", WET)
     assert len(recs) == 5
-    assert [r["score"] for r in recs] == sorted((r["score"] for r in recs), reverse=True)
+    assert [r["score"] for r in recs] == sorted(
+        (r["score"] for r in recs), reverse=True
+    )
     assert all(0 <= r["score"] <= 1 for r in recs)
 
 

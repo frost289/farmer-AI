@@ -1,4 +1,5 @@
 """Pure-logic tests (no FastAPI needed)."""
+
 from app.services import classifier, detector, preprocess, segmenter, severity
 from tests.helpers import png_bytes, textured
 
@@ -39,7 +40,9 @@ def test_classifier_is_deterministic_and_sorted():
     data = png_bytes(textured(GREEN))
     a, b = classifier.classify(data, "maize"), classifier.classify(data, "maize")
     assert a == b
-    assert [p["confidence"] for p in a] == sorted((p["confidence"] for p in a), reverse=True)
+    assert [p["confidence"] for p in a] == sorted(
+        (p["confidence"] for p in a), reverse=True
+    )
     labels = {i["label"] for i in classifier.load_taxonomy()}
     assert all(p["label"] in labels for p in a)
 

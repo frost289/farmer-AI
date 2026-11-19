@@ -4,7 +4,9 @@ from app.schemas.advisory import QueryRequest, QueryResponse
 from app.security import verify_internal_key
 from app.services.llm_service import answer_question
 
-router = APIRouter(prefix="/ai/v1/advisory", dependencies=[Depends(verify_internal_key)])
+router = APIRouter(
+    prefix="/ai/v1/advisory", dependencies=[Depends(verify_internal_key)]
+)
 
 
 @router.post("/query", response_model=QueryResponse)

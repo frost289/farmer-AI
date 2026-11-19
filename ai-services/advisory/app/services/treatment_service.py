@@ -4,6 +4,7 @@ STUB knowledge base with general, widely published practices. Member 3 must revi
 Malawi agronomy sources (DAES guidelines, extension officers) before real use.
 Never add product names or doses here without a verified source.
 """
+
 from typing import Optional
 
 CHEMICAL_NOTE = (
@@ -17,7 +18,10 @@ KB: dict[str, dict] = {
             "Remove and destroy infected plants early so the virus does not spread.",
             "Keep fields weed-free; weeds can hide the leafhoppers that spread the virus.",
         ],
-        "chemical": [CHEMICAL_NOTE + " Treatment targets the leafhopper insects, not the virus itself."],
+        "chemical": [
+            CHEMICAL_NOTE
+            + " Treatment targets the leafhopper insects, not the virus itself."
+        ],
         "prevention": [
             "Plant resistant or tolerant maize varieties.",
             "Plant early with the first rains; late-planted maize is hit harder.",
@@ -25,7 +29,9 @@ KB: dict[str, dict] = {
         "warnings": ["There is no cure for infected plants."],
     },
     "maize_gray_leaf_spot": {
-        "organic": ["Remove badly infected leaves and bury or burn old crop residue after harvest."],
+        "organic": [
+            "Remove badly infected leaves and bury or burn old crop residue after harvest."
+        ],
         "chemical": [CHEMICAL_NOTE],
         "prevention": [
             "Rotate maize with legumes such as groundnut or soybean.",
@@ -47,8 +53,12 @@ KB: dict[str, dict] = {
         "warnings": ["Spray early morning or late afternoon, when larvae are active."],
     },
     "cassava_mosaic_disease": {
-        "organic": ["Uproot and destroy infected plants and do not use their stems as planting material."],
-        "chemical": ["Insecticides against whiteflies are rarely economical. Ask your extension officer first."],
+        "organic": [
+            "Uproot and destroy infected plants and do not use their stems as planting material."
+        ],
+        "chemical": [
+            "Insecticides against whiteflies are rarely economical. Ask your extension officer first."
+        ],
         "prevention": [
             "Use clean cuttings from healthy plants and resistant varieties.",
             "Plant stems from fields with no mosaic symptoms.",
@@ -57,7 +67,9 @@ KB: dict[str, dict] = {
     },
     "groundnut_rosette": {
         "organic": ["Remove infected plants early and weed the field well."],
-        "chemical": [CHEMICAL_NOTE + " Control targets the aphids that spread rosette."],
+        "chemical": [
+            CHEMICAL_NOTE + " Control targets the aphids that spread rosette."
+        ],
         "prevention": [
             "Plant resistant varieties.",
             "Plant early and use close spacing, which reduces aphid spread.",
@@ -76,7 +88,12 @@ KB: dict[str, dict] = {
         ],
         "warnings": ["The disease spreads quickly in cool, wet weather."],
     },
-    "healthy": {"organic": [], "chemical": [], "prevention": ["Keep scouting your field every week."], "warnings": []},
+    "healthy": {
+        "organic": [],
+        "chemical": [],
+        "prevention": ["Keep scouting your field every week."],
+        "warnings": [],
+    },
 }
 
 GENERIC = {
@@ -91,9 +108,13 @@ def get_treatment(label: str, severity_pct: Optional[float], language: str) -> d
     entry = KB.get(label, GENERIC)
     result = {k: list(v) for k, v in entry.items()}
     if severity_pct is not None and severity_pct > 50:
-        result["warnings"].append("The damage is severe. Contact your extension officer as soon as possible.")
+        result["warnings"].append(
+            "The damage is severe. Contact your extension officer as soon as possible."
+        )
     if label not in KB:
-        result["warnings"].append("No specific advice is available for this problem yet.")
+        result["warnings"].append(
+            "No specific advice is available for this problem yet."
+        )
     result["language"] = "en"
     result["language_fallback"] = language == "ny"
     return result
