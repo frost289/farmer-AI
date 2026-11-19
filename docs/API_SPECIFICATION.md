@@ -80,7 +80,7 @@ Response **202**:
   "result": {
     "type": "disease", "name": "maize_streak_virus", "confidence": 0.87,
     "severity": "moderate", "severity_pct": 35,
-    "treatment": { "organic": [], "chemical": [], "prevention": [], "warnings": [] },
+    "treatment": { "organic": [], "chemical": [], "prevention": [], "warnings": [], "language": "en", "language_fallback": false },
     "low_confidence": false, "model_version": "v0.1.0"
   },
   "error_code": null
@@ -99,12 +99,12 @@ Response `data`: `{ "answer": "...", "language": "en", "language_fallback": fals
 `GET /planting-readiness?farm_id=uuid&crop=maize`
 ```json
 { "data": { "verdict": "wait", "reason": "Rains not yet established", "rain_onset_date": "2026-11-28",
-  "soil_moisture": "dry", "confidence": 0.8 } }
+  "soil_moisture": "dry", "confidence": 0.8, "language": "en", "language_fallback": true } }
 ```
 
 `GET /recommendations/crops?farm_id=uuid`
 ```json
-{ "data": { "recommendations": [ { "crop": "maize", "variety": "SC403", "score": 0.91, "reason": "Suited to loam soil and expected rainfall" } ] } }
+{ "data": { "recommendations": [ { "crop": "maize", "variety": "SC403", "score": 0.91, "reason": "Suited to loam soil and expected rainfall" } ], "language": "en", "language_fallback": true } }
 ```
 
 ### 2.5 Weather and Outbreaks
@@ -140,7 +140,7 @@ Predictions sorted by confidence (highest first), at most 3. If `quality.usable`
 { "question": "...", "language": "en",
   "context": { "crop": "maize", "district": "Lilongwe", "season": "rainy" } }
 ```
-Response: `{ "answer": "...", "sources": [], "model_version": "v0.1.0" }`
+Response: `{ "answer": "...", "sources": [], "model_version": "v0.1.0", "language": "en", "language_fallback": false }`.
 
 `POST /ai/v1/advisory/treatment`
 ```json
