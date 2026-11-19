@@ -15,7 +15,7 @@ export default function RecommendationsPage() {
 
   const farms = useQuery({ queryKey: ['farms'], queryFn: () => listFarms() });
   const farm = farms.data?.find((f) => f.id === farmId);
-  const hasLocation = farm?.lat != null && farm?.lng != null;
+  const hasLocation = farm?.lat !== null && farm?.lat !== undefined && farm?.lng !== null && farm?.lng !== undefined;
 
   const recs = useQuery({
     queryKey: ['crop-recs', requested],
@@ -28,7 +28,7 @@ export default function RecommendationsPage() {
       <h1 className="text-2xl font-bold">What should I plant?</h1>
       <section className="card space-y-4">
         {farms.isLoading ? <Loader /> : <FarmSelect farms={farms.data} value={farmId} onChange={(v) => { setFarmId(v); setRequested(''); }} />}
-        {farmId && !hasLocation && <Alert type="warning">Add this farm's location first so we can use the weather and soil of your area.</Alert>}
+        {farmId && !hasLocation && <Alert type="warning">Add this farm&apos;s location first so we can use the weather and soil of your area.</Alert>}
         <Button className="w-full" disabled={!farmId || !hasLocation} loading={recs.isFetching} onClick={() => setRequested(farmId)}>
           Get recommendations
         </Button>
