@@ -16,7 +16,7 @@ export default function SymptomChat({ farmId, language }) {
 
   const mutation = useMutation({
     mutationFn: (q) => ask({ farmId, question: q, language }),
-    onSuccess: (data, q) => setMessages((m) => [...m, { q, a: data.answer }]),
+    onSuccess: (data, q) => setMessages((m) => [...m, { q, a: data.answer, language_fallback: data.language_fallback }]),
     onError: (err, q) => setMessages((m) => [...m, { q, a: errorMessage(err), failed: true }]),
   });
 
@@ -30,7 +30,7 @@ export default function SymptomChat({ farmId, language }) {
   return (
     <section className="card space-y-3">
       <h2 className="text-lg font-semibold">{t('chat.title')}</h2>
-      {language === 'ny' && messages.some((m) => !m.failed) && (
+      {messages.some((m) => !m.failed && m.language_fallback) && (
         <p className="text-sm text-gray-600" role="note">{t('ai.english_fallback')}</p>
       )}
       <div className="space-y-3" aria-live="polite">
