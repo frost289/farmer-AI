@@ -36,7 +36,7 @@ export default function RecommendationsPage() {
         </Button>
       </section>
       {recs.error && <Alert type="error">{errorMessage(recs.error)}</Alert>}
-      {recs.data && <CropRecommendation recommendations={recs.data.recommendations} />}
+      {recs.data && <CropRecommendation recommendations={recs.data.recommendations} languageFallback={recs.data.language_fallback} />}
     </div>
   );
 }
