@@ -33,7 +33,7 @@ async function diagnoseImage(d, language, requestId) {
       type: top.type,
       name: top.label,
       confidence: top.confidence,
-      severity: severityPct == null ? null : severityFromPct(severityPct),
+      severity: severityPct === null ? null : severityFromPct(severityPct),
       severity_pct: severityPct,
       treatment,
       low_confidence: top.confidence < LIMITS.lowConfidence,
