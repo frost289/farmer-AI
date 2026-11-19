@@ -33,7 +33,7 @@ export default function DiagnosisResult({ diagnosis, timedOut = false }) {
   }
   if (diagnosis.status !== 'completed') {
     if (timedOut) {
-      return <Alert type="warning">This is taking longer than usual. Check back in "Recent checks" in a few minutes.</Alert>;
+      return <Alert type="warning">This is taking longer than usual. Check back in &quot;Recent checks&quot; in a few minutes.</Alert>;
     }
     return <Loader label="Checking your crop..." />;
   }
@@ -55,10 +55,10 @@ export default function DiagnosisResult({ diagnosis, timedOut = false }) {
           </span>
         )}
       </div>
-      {!isUnknown && r.confidence != null && (
+      {!isUnknown && r.confidence !== null && r.confidence !== undefined && (
         <p className="text-sm text-gray-600">Confidence: {percent(r.confidence)}</p>
       )}
-      {r.severity_pct != null && (
+      {r.severity_pct !== null && r.severity_pct !== undefined && (
         <div>
           <div className="h-2 w-full rounded bg-gray-200">
             <div className="h-2 rounded bg-red-500" style={{ width: `${Math.min(100, r.severity_pct)}%` }} />
