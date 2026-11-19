@@ -94,6 +94,6 @@ def get_treatment(label: str, severity_pct: Optional[float], language: str) -> d
         result["warnings"].append("The damage is severe. Contact your extension officer as soon as possible.")
     if label not in KB:
         result["warnings"].append("No specific advice is available for this problem yet.")
-    if language == "ny":
-        result["warnings"].append("Chichewa advice is not available yet, so this advice is in English.")
+    result["language"] = "en"
+    result["language_fallback"] = language == "ny"
     return result
