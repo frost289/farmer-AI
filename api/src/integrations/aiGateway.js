@@ -44,6 +44,14 @@ export async function aiRequest({ baseUrl, path, method = 'POST', ...opts }) {
       return await attempt(args);
     }
   } catch (err) {
+    // Shows the real reason in the Render logs (the user only sees the friendly message).
+    logger.warn('AI call failed', {
+      url,
+      status: err.status,
+      error: err.message,
+      cause: err.cause?.code || err.cause?.message,
+      body: err.body,
+    });
     if (err.name === 'AbortError') {
       throw new ApiError(504, 'AI_TIMEOUT', 'The AI service took too long. Please try again.');
     }
@@ -51,15 +59,6 @@ export async function aiRequest({ baseUrl, path, method = 'POST', ...opts }) {
       const { code, message, details } = err.body.error;
       throw new ApiError(err.status, code, message, details);
     }
-    // Log the real reason (never the key) so it shows up in the Render logs.
-    logger.warn('ai request failed', {
-      request_id: opts.requestId,
-      url,
-      status: err.status,
-      error: err.message,
-      cause: err.cause?.code || err.cause?.message,
-      body: err.body ? JSON.stringify(err.body).slice(0, 300) : undefined,
-    });
     throw new ApiError(503, 'AI_UNAVAILABLE', 'The AI service is not available right now.');
   }
 }
