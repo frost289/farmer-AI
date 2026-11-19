@@ -11,7 +11,7 @@ import { registerSchema } from '../../utils/validators.js';
 
 export default function RegisterForm() {
   const { register: signUp } = useAuth();
-  const { t } = useLanguage();
+  const { t, setLanguage } = useLanguage();
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const {
@@ -19,6 +19,8 @@ export default function RegisterForm() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({ resolver: zodResolver(registerSchema), defaultValues: { role: 'farmer', language: 'en' } });
+
+  const languageField = register('language');
 
   const onSubmit = async (values) => {
     setError('');
@@ -51,7 +53,11 @@ export default function RegisterForm() {
           { value: 'en', label: 'English' },
           { value: 'ny', label: 'Chichewa' },
         ]}
-        {...register('language')}
+        {...languageField}
+        onChange={(event) => {
+          languageField.onChange(event);
+          setLanguage(event.target.value);
+        }}
       />
       <Button type="submit" loading={isSubmitting} className="w-full">
         {t('auth.create_account')}
