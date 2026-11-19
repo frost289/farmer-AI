@@ -39,6 +39,9 @@ def test_treatment_shape():
     assert set(r.json()) == {"organic", "chemical", "prevention", "warnings", "language", "language_fallback"}
     assert r.json()["language"] == "en"
     assert r.json()["language_fallback"] is False
+    ny = client.post("/ai/v1/advisory/treatment", headers=H, json={"diagnosis": {"label": "maize_streak_virus", "severity_pct": 35}, "crop": "maize", "language": "ny"})
+    assert ny.json()["language"] == "en"
+    assert ny.json()["language_fallback"] is True
 
 
 def test_planting_and_recommend():
@@ -47,7 +50,14 @@ def test_planting_and_recommend():
     assert p.json()["verdict"] in {"plant", "wait", "not_recommended"}
     assert p.json()["language"] == "en"
     assert p.json()["language_fallback"] is False
+    p_ny = client.post("/ai/v1/advisory/planting-readiness", headers=H, json={"crop": "maize", "language": "ny", "location": {"lat": -13.9, "lng": 33.7}, "soil_type": "loam", "weather": weather})
+    assert p_ny.json()["language"] == "en"
+    assert p_ny.json()["language_fallback"] is True
+
     r = client.post("/ai/v1/advisory/recommend-crops", headers=H, json={"location": {"lat": -13.9, "lng": 33.7}, "soil_type": "loam", "weather": weather})
     assert r.json()["recommendations"]
     assert r.json()["language"] == "en"
     assert r.json()["language_fallback"] is False
+    r_ny = client.post("/ai/v1/advisory/recommend-crops", headers=H, json={"language": "ny", "location": {"lat": -13.9, "lng": 33.7}, "soil_type": "loam", "weather": weather})
+    assert r_ny.json()["language"] == "en"
+    assert r_ny.json()["language_fallback"] is True
