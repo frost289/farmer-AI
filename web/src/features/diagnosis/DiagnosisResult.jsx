@@ -51,7 +51,7 @@ export default function DiagnosisResult({ diagnosis, timedOut = false }) {
         </h3>
         {r.severity && (
           <span className={`rounded-full px-3 py-1 text-sm font-semibold ${SEVERITY[r.severity]}`}>
-            {humanize(r.severity)} {t('diagnosis.severity')}
+            {t(`severity.${r.severity}`)} {t('diagnosis.severity')}
           </span>
         )}
       </div>
@@ -66,9 +66,7 @@ export default function DiagnosisResult({ diagnosis, timedOut = false }) {
           <p className="mt-1 text-xs text-gray-500">~{Math.round(r.severity_pct)}% {t('diagnosis.leaf_affected')}</p>
         </div>
       )}
-      {r.low_confidence && (
-        <Alert type="warning">{t('diagnosis.low_confidence')}</Alert>
-      )}
+      {r.low_confidence && <Alert type="warning">{t('diagnosis.low_confidence')}</Alert>}
       <TreatmentList title={t('diagnosis.organic')} items={treatment.organic} />
       <TreatmentList title={t('diagnosis.chemical')} items={treatment.chemical} />
       <TreatmentList title={t('diagnosis.prevention')} items={treatment.prevention} />
