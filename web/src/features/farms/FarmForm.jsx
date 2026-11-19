@@ -4,11 +4,13 @@ import { useForm } from 'react-hook-form';
 import Alert from '../../components/common/Alert.jsx';
 import Button from '../../components/common/Button.jsx';
 import Input, { Select } from '../../components/common/Input.jsx';
+import { useLanguage } from '../../hooks/useAuth.js';
 import { DISTRICTS, SOIL_TYPES } from '../../utils/constants.js';
 import { humanize } from '../../utils/formatters.js';
 import { farmSchema } from '../../utils/validators.js';
 
-export default function FarmForm({ defaultValues, onSubmit, submitLabel = 'Save farm', error }) {
+export default function FarmForm({ defaultValues, onSubmit, submitLabel, error }) {
+  const { t } = useLanguage();
   const [locating, setLocating] = useState(false);
   const [locationMsg, setLocationMsg] = useState('');
   const {
@@ -22,17 +24,17 @@ export default function FarmForm({ defaultValues, onSubmit, submitLabel = 'Save 
   });
 
   const useMyLocation = () => {
-    if (!navigator.geolocation) return setLocationMsg('Location is not supported on this device.');
+    if (!navigator.geolocation) return setLocationMsg(t('farm.location_unsupported'));
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setValue('lat', Number(pos.coords.latitude.toFixed(5)));
         setValue('lng', Number(pos.coords.longitude.toFixed(5)));
-        setLocationMsg('Location added.');
+        setLocationMsg(t('farm.location_added'));
         setLocating(false);
       },
       () => {
-        setLocationMsg('Could not get your location. You can type it in.');
+        setLocationMsg(t('farm.location_failed'));
         setLocating(false);
       },
       { enableHighAccuracy: false, timeout: 10_000 },
@@ -42,23 +44,23 @@ export default function FarmForm({ defaultValues, onSubmit, submitLabel = 'Save 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       <Alert type="error">{error}</Alert>
-      <Input label="Farm name" error={errors.name?.message} {...register('name')} />
-      <Select label="District" options={DISTRICTS} placeholder="Choose a district" error={errors.district?.message} {...register('district')} />
-      <Select label="Soil type" options={SOIL_TYPES.map((s) => ({ value: s, label: humanize(s) }))} error={errors.soil_type?.message} {...register('soil_type')} />
-      <Input label="Size (hectares)" type="number" step="0.1" inputMode="decimal" error={errors.size_ha?.message} {...register('size_ha')} />
+      <Input label={t('farm.name')} error={errors.name?.message} {...register('name')} />
+      <Select label={t('farm.district')} options={DISTRICTS} placeholder={t('farm.choose_district')} error={errors.district?.message} {...register('district')} />
+      <Select label={t('farm.soil_type')} options={SOIL_TYPES.map((s) => ({ value: s, label: humanize(s) }))} error={errors.soil_type?.message} {...register('soil_type')} />
+      <Input label={t('farm.size')} type="number" step="0.1" inputMode="decimal" error={errors.size_ha?.message} {...register('size_ha')} />
       <div className="rounded-lg bg-gray-50 p-3">
-        <p className="mb-2 text-sm text-gray-600">Location is needed for weather and planting advice.</p>
+        <p className="mb-2 text-sm text-gray-600">{t('farm.location_needed')}</p>
         <Button variant="secondary" onClick={useMyLocation} loading={locating}>
-          Use my location
+          {t('farm.use_location')}
         </Button>
         {locationMsg && <p className="mt-2 text-sm text-gray-600">{locationMsg}</p>}
         <div className="mt-3 grid grid-cols-2 gap-3">
-          <Input label="Latitude" type="number" step="any" error={errors.lat?.message} {...register('lat')} />
-          <Input label="Longitude" type="number" step="any" error={errors.lng?.message} {...register('lng')} />
+          <Input label={t('farm.latitude')} type="number" step="any" error={errors.lat?.message} {...register('lat')} />
+          <Input label={t('farm.longitude')} type="number" step="any" error={errors.lng?.message} {...register('lng')} />
         </div>
       </div>
       <Button type="submit" loading={isSubmitting} className="w-full">
-        {submitLabel}
+        {submitLabel || t('farm.save')}
       </Button>
     </form>
   );

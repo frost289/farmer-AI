@@ -22,7 +22,7 @@ export const registerSchema = z.object({
 
 const optionalNumber = (min, max, msg) =>
   z.preprocess(
-    (v) => (v === '' || v == null || Number.isNaN(v) ? undefined : Number(v)),
+    (v) => (v === '' || v === null || v === undefined || Number.isNaN(v) ? undefined : Number(v)),
     z.number().min(min, msg).max(max, msg).optional(),
   );
 
@@ -31,7 +31,7 @@ export const farmSchema = z.object({
   district: z.string().min(1, 'Choose a district'),
   soil_type: z.enum(SOIL_TYPES),
   size_ha: z.preprocess(
-    (v) => (v === '' || v == null || Number.isNaN(v) ? undefined : Number(v)),
+    (v) => (v === '' || v === null || v === undefined || Number.isNaN(v) ? undefined : Number(v)),
     z.number().positive('Must be more than 0').optional(),
   ),
   lat: optionalNumber(-90, 90, 'Latitude must be between -90 and 90'),

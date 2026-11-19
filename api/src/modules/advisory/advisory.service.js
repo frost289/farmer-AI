@@ -10,5 +10,9 @@ export async function ask(user, { farm_id: farmId, question, language }, request
     { question, language: lang, context: { district: farm?.district, season: currentSeason() } },
     requestId,
   );
-  return { answer: result.answer, language: lang };
+  return {
+    answer: result.answer,
+    language: result.language,
+    language_fallback: result.language_fallback,
+  };
 }

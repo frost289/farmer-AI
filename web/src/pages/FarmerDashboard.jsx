@@ -8,19 +8,20 @@ import Modal from '../components/common/Modal.jsx';
 import DiagnosisHistory from '../features/diagnosis/DiagnosisHistory.jsx';
 import FarmForm from '../features/farms/FarmForm.jsx';
 import FarmList from '../features/farms/FarmList.jsx';
-import { useAuth } from '../hooks/useAuth.js';
+import { useAuth, useLanguage } from '../hooks/useAuth.js';
 import { createFarm, listFarms } from '../services/farmService.js';
 import { listAlerts } from '../services/outbreakService.js';
 import { errorMessage, formatDate } from '../utils/formatters.js';
 
 const ACTIONS = [
-  { to: '/diagnosis', icon: '🌿', label: 'Check my crop' },
-  { to: '/planting', icon: '🌧️', label: 'Can I plant?' },
-  { to: '/recommendations', icon: '🌱', label: 'What to plant' },
+  { to: '/diagnosis', icon: '🌿', key: 'nav.diagnosis' },
+  { to: '/planting', icon: '🌧️', key: 'nav.planting' },
+  { to: '/recommendations', icon: '🌱', key: 'nav.recommendations' },
 ];
 
 export default function FarmerDashboard() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [adding, setAdding] = useState(false);
   const farms = useQuery({ queryKey: ['farms'], queryFn: () => listFarms() });
@@ -36,20 +37,20 @@ export default function FarmerDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Hello, {user.name}</h1>
+      <h1 className="text-2xl font-bold">{t('common.hello')}, {user.name}</h1>
 
       <div className="grid grid-cols-3 gap-3">
         {ACTIONS.map((a) => (
           <Link key={a.to} to={a.to} className="card flex min-h-[96px] flex-col items-center justify-center gap-1 text-center text-sm font-semibold hover:border-brand-500">
             <span className="text-3xl" aria-hidden="true">{a.icon}</span>
-            {a.label}
+            {t(a.key)}
           </Link>
         ))}
       </div>
 
       {alerts.data?.length > 0 && (
         <section className="space-y-2">
-          <h2 className="text-lg font-semibold">Alerts</h2>
+          <h2 className="text-lg font-semibold">{t('common.alerts')}</h2>
           {alerts.data.slice(0, 3).map((a) => (
             <Alert key={a.id} type="warning" title={a.title}>
               {a.message} <span className="text-xs text-gray-500">({formatDate(a.created_at)})</span>
@@ -60,25 +61,25 @@ export default function FarmerDashboard() {
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">My farms</h2>
-          <Button variant="secondary" onClick={() => setAdding(true)}>+ Add farm</Button>
+          <h2 className="text-lg font-semibold">{t('common.my_farms')}</h2>
+          <Button variant="secondary" onClick={() => setAdding(true)}>+ {t('common.add_farm')}</Button>
         </div>
         {farms.isLoading ? (
           <Loader />
         ) : farms.error ? (
           <Alert type="error">{errorMessage(farms.error)}</Alert>
         ) : (
-          <FarmList farms={farms.data} emptyAction={<Button onClick={() => setAdding(true)}>Add your first farm</Button>} />
+          <FarmList farms={farms.data} emptyAction={<Button onClick={() => setAdding(true)}>{t('common.add_first_farm')}</Button>} />
         )}
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Recent crop checks</h2>
+        <h2 className="text-lg font-semibold">{t('common.recent_checks')}</h2>
         <DiagnosisHistory limit={3} />
       </section>
 
       {adding && (
-        <Modal title="Add a farm" onClose={() => setAdding(false)}>
+        <Modal title={t('farm.add_title')} onClose={() => setAdding(false)}>
           <FarmForm onSubmit={(v) => create.mutateAsync(v)} error={create.error && errorMessage(create.error)} />
         </Modal>
       )}

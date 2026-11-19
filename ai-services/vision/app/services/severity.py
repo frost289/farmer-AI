@@ -4,6 +4,7 @@ Heuristic (real but simple): share of yellow/brown pixels among plant-coloured p
 Limits: brown soil in the background can count as damage. Member 4: replace with the
 segmentation model (segmenter.py) and a calibrated severity scale.
 """
+
 import numpy as np
 from PIL import Image
 

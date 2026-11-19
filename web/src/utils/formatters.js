@@ -1,7 +1,7 @@
 export const humanize = (value) =>
   value ? String(value).replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase()) : '';
 
-export const percent = (value) => (value == null ? '-' : `${Math.round(value * 100)}%`);
+export const percent = (value) => (value === null || value === undefined ? '-' : `${Math.round(value * 100)}%`);
 
 export const formatDate = (iso) =>
   iso ? new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '';

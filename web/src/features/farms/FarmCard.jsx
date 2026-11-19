@@ -9,7 +9,7 @@ export default function FarmCard({ farm }) {
       <p className="mt-1 text-sm text-gray-500">
         {humanize(farm.soil_type)} soil{farm.size_ha ? ` · ${farm.size_ha} ha` : ''}
       </p>
-      {farm.lat == null && <p className="mt-2 text-xs text-amber-700">Add location to get weather advice</p>}
+      {(farm.lat === null || farm.lat === undefined) && <p className="mt-2 text-xs text-amber-700">Add location to get weather advice</p>}
     </Link>
   );
 }

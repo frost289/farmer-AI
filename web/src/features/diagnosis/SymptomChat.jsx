@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import Button from '../../components/common/Button.jsx';
 import { Textarea } from '../../components/common/Input.jsx';
+import { useLanguage } from '../../hooks/useAuth.js';
 import { ask } from '../../services/advisoryService.js';
 import VoiceInput from './VoiceInput.jsx';
 import { MAX_QUESTION } from '../../utils/constants.js';
@@ -9,12 +10,13 @@ import { errorMessage } from '../../utils/formatters.js';
 
 /** Ask FarmAI a farming question and read the answer. */
 export default function SymptomChat({ farmId, language }) {
+  const { t } = useLanguage();
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState([]);
 
   const mutation = useMutation({
     mutationFn: (q) => ask({ farmId, question: q, language }),
-    onSuccess: (data, q) => setMessages((m) => [...m, { q, a: data.answer }]),
+    onSuccess: (data, q) => setMessages((m) => [...m, { q, a: data.answer, language_fallback: data.language_fallback }]),
     onError: (err, q) => setMessages((m) => [...m, { q, a: errorMessage(err), failed: true }]),
   });
 
@@ -27,7 +29,10 @@ export default function SymptomChat({ farmId, language }) {
 
   return (
     <section className="card space-y-3">
-      <h2 className="text-lg font-semibold">Ask FarmAI</h2>
+      <h2 className="text-lg font-semibold">{t('chat.title')}</h2>
+      {messages.some((m) => !m.failed && m.language_fallback) && (
+        <p className="text-sm text-gray-600" role="note">{t('ai.english_fallback')}</p>
+      )}
       <div className="space-y-3" aria-live="polite">
         {messages.map((m, i) => (
           <div key={i} className="space-y-1 text-sm">
@@ -37,18 +42,18 @@ export default function SymptomChat({ farmId, language }) {
         ))}
       </div>
       <Textarea
-        label="Your question"
+        label={t('chat.question')}
         value={question}
         maxLength={MAX_QUESTION}
         onChange={(e) => setQuestion(e.target.value)}
         rows={2}
-        placeholder="For example: When should I weed my maize?"
+        placeholder={t('chat.placeholder')}
       />
       <div className="flex gap-2">
         <Button onClick={send} loading={mutation.isPending} disabled={!question.trim()}>
-          Ask
+          {t('chat.ask')}
         </Button>
-        <VoiceInput onText={(t) => setQuestion((q) => `${q} ${t}`.trim())} />
+        <VoiceInput onText={(spoken) => setQuestion((q) => `${q} ${spoken}`.trim())} />
       </div>
     </section>
   );

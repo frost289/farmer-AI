@@ -6,6 +6,7 @@ Member 4: replace `classify` with a trained CNN/YOLO model and keep the return s
     [{"label": str, "type": str, "confidence": float}, ...] sorted by confidence, max 3.
 Labels must come from docs/label-taxonomy.json.
 """
+
 import hashlib
 import json
 from functools import lru_cache
@@ -23,7 +24,9 @@ def labels_for(crop: Optional[str]) -> list[dict]:
     labels = load_taxonomy()
     if not crop:
         return labels
-    matching = [item for item in labels if crop in item["crops"] or "*" in item["crops"]]
+    matching = [
+        item for item in labels if crop in item["crops"] or "*" in item["crops"]
+    ]
     return matching if len(matching) > 1 else labels
 
 
@@ -31,7 +34,10 @@ def classify(data: bytes, crop: Optional[str]) -> list[dict]:
     candidates = labels_for(crop)
     digest = hashlib.sha256(data).digest()
     start = digest[1] % len(candidates)
-    ordered = [candidates[(start + i) % len(candidates)] for i in range(min(3, len(candidates)))]
+    ordered = [
+        candidates[(start + i) % len(candidates)]
+        for i in range(min(3, len(candidates)))
+    ]
     top = round(0.55 + (digest[0] / 255) * 0.4, 2)
     scores = [top, round((1 - top) * 0.6, 2), round((1 - top) * 0.25, 2)]
     return [

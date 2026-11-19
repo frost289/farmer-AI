@@ -38,6 +38,8 @@ class QueryResponse(BaseModel):
     answer: str
     sources: list[str] = []
     model_version: str
+    language: Language = "en"
+    language_fallback: bool = False
 
 
 class DiagnosisInput(BaseModel):
@@ -56,10 +58,13 @@ class TreatmentResponse(BaseModel):
     chemical: list[str] = []
     prevention: list[str] = []
     warnings: list[str] = []
+    language: Language = "en"
+    language_fallback: bool = False
 
 
 class PlantingReadinessRequest(BaseModel):
     crop: str
+    language: Language = "en"
     location: Location
     soil_type: str = "unknown"
     weather: Weather = Weather()
@@ -71,10 +76,13 @@ class PlantingReadinessResponse(BaseModel):
     rain_onset_date: Optional[str] = None
     soil_moisture: Literal["dry", "adequate", "wet"]
     confidence: float = Field(ge=0, le=1)
+    language: Language = "en"
+    language_fallback: bool = False
 
 
 class RecommendRequest(BaseModel):
     location: Location
+    language: Language = "en"
     soil_type: str = "unknown"
     weather: Weather = Weather()
 
@@ -88,3 +96,5 @@ class CropRecommendation(BaseModel):
 
 class RecommendResponse(BaseModel):
     recommendations: list[CropRecommendation]
+    language: Language = "en"
+    language_fallback: bool = False
