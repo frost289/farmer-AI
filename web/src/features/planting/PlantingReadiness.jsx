@@ -21,7 +21,7 @@ export default function PlantingReadiness({ readiness }) {
     <section className={`rounded-xl border p-4 ${VERDICT_STYLE[verdict]}`} aria-live="polite">
       <p className="text-2xl font-bold">{t(VERDICT_KEYS[verdict])}</p>
       <p className="mt-2">{readiness.reason}</p>
-      {language === 'ny' && <p className="mt-2 text-sm">{t('ai.english_fallback')}</p>}
+      {readiness.language_fallback && <p className="mt-2 text-sm">{t('ai.english_fallback')}</p>}
       <ul className="mt-2 text-sm">
         {readiness.rain_onset_date && <li>{t('planting.rain_from')}: {readiness.rain_onset_date}</li>}
         {readiness.soil_moisture && <li>{t('planting.soil_moisture')}: {t(`soil.${readiness.soil_moisture}`)}</li>}
