@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import Loader from '../../components/common/Loader.jsx';
+import { useLanguage } from '../../hooks/useAuth.js';
 import { listDiagnoses } from '../../services/diagnosisService.js';
 import { formatDateTime, humanize } from '../../utils/formatters.js';
 
@@ -12,13 +13,14 @@ const STATUS_STYLE = {
 };
 
 export default function DiagnosisHistory({ farmId, limit = 5, onSelect }) {
+  const { t } = useLanguage();
   const { data, isLoading } = useQuery({
     queryKey: ['diagnoses', { farmId, limit }],
     queryFn: () => listDiagnoses({ farm_id: farmId || undefined, limit }),
   });
 
   if (isLoading) return <Loader />;
-  if (!data?.length) return <EmptyState title="No checks yet" message="Your crop checks will appear here." />;
+  if (!data?.length) return <EmptyState title={t('diagnosis.no_checks')} message={t('diagnosis.no_checks_message')} />;
 
   return (
     <ul className="divide-y rounded-xl border bg-white">
@@ -30,7 +32,7 @@ export default function DiagnosisHistory({ farmId, limit = 5, onSelect }) {
                 {d.status === 'completed' ? humanize(d.result?.name) : humanize(d.status)}
               </span>
               <span className="block text-xs text-gray-500">
-                {humanize(d.crop) || 'Crop not set'} · {formatDateTime(d.created_at)}
+                {humanize(d.crop) || t('common.crop_not_set')} · {formatDateTime(d.created_at)}
               </span>
             </span>
             <span className={`text-sm font-semibold ${STATUS_STYLE[d.status]}`}>{humanize(d.status)}</span>
