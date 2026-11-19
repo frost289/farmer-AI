@@ -122,6 +122,7 @@ const messages = {
     'recommendations.get': 'Get recommendations',
     'recommendations.none': 'No recommendations yet',
     'recommendations.match': 'match',
+    'ai.english_fallback': 'Some generated farming advice is currently available in English only.',
   },
   ny: {
     'nav.dashboard': 'Kunyumba',
@@ -243,6 +244,7 @@ const messages = {
     'recommendations.get': 'Pezani malangizo a mbewu',
     'recommendations.none': 'Palibe malangizo panopa',
     'recommendations.match': 'kufanana',
+    'ai.english_fallback': 'Malangizo ena opangidwa ndi makina akupezeka mu Chingelezi chokha pakadali pano.',
   },
 };
 
