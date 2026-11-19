@@ -20,7 +20,7 @@ export default function PlantingPage() {
 
   const farms = useQuery({ queryKey: ['farms'], queryFn: () => listFarms() });
   const farm = farms.data?.find((f) => f.id === farmId);
-  const hasLocation = farm?.lat != null && farm?.lng != null;
+  const hasLocation = farm?.lat !== null && farm?.lat !== undefined && farm?.lng !== null && farm?.lng !== undefined;
 
   const readiness = useQuery({
     queryKey: ['readiness', request],
