@@ -16,15 +16,14 @@ const VERDICT_STYLE = {
 export default function PlantingReadiness({ readiness }) {
   const { t } = useLanguage();
   if (!readiness) return null;
-  const verdict = readiness.verdict in VERDICT_KEYS ? readiness.verdict : 'wait';
-  const style = VERDICT_STYLE[verdict];
+  const verdict = Object.hasOwn(VERDICT_KEYS, readiness.verdict) ? readiness.verdict : 'wait';
   return (
-    <section className={`rounded-xl border p-4 ${style}`} aria-live="polite">
+    <section className={`rounded-xl border p-4 ${VERDICT_STYLE[verdict]}`} aria-live="polite">
       <p className="text-2xl font-bold">{t(VERDICT_KEYS[verdict])}</p>
       <p className="mt-2">{readiness.reason}</p>
       <ul className="mt-2 text-sm">
         {readiness.rain_onset_date && <li>{t('planting.rain_from')}: {readiness.rain_onset_date}</li>}
-        {readiness.soil_moisture && <li>{t('planting.soil_moisture')}: {readiness.soil_moisture}</li>}
+        {readiness.soil_moisture && <li>{t('planting.soil_moisture')}: {t(`soil.${readiness.soil_moisture}`)}</li>}
         <li>{t('diagnosis.confidence')}: {percent(readiness.confidence)}</li>
       </ul>
     </section>
