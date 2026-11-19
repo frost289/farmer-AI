@@ -96,15 +96,15 @@ While not `completed`/`failed`, `result` is `null`. The web app polls every 2 se
 ```
 Response `data`: `{ "answer": "...", "language": "en", "language_fallback": false }`. `language` is the actual response language; `language_fallback` is true when English is returned for a Chichewa request.
 
-`GET /planting-readiness?farm_id=uuid&crop=maize`
+`GET /planting-readiness?farm_id=uuid&crop=maize` (uses the authenticated user's saved language preference for generated text).
 ```json
 { "data": { "verdict": "wait", "reason": "Rains not yet established", "rain_onset_date": "2026-11-28",
-  "soil_moisture": "dry", "confidence": 0.8, "language": "en", "language_fallback": true } }
+  "soil_moisture": "dry", "confidence": 0.8, "language": "en", "language_fallback": false } }
 ```
 
-`GET /recommendations/crops?farm_id=uuid`
+`GET /recommendations/crops?farm_id=uuid` (uses the authenticated user's saved language preference for generated text).
 ```json
-{ "data": { "recommendations": [ { "crop": "maize", "variety": "SC403", "score": 0.91, "reason": "Suited to loam soil and expected rainfall" } ], "language": "en", "language_fallback": true } }
+{ "data": { "recommendations": [ { "crop": "maize", "variety": "SC403", "score": 0.91, "reason": "Suited to loam soil and expected rainfall" } ], "language": "en", "language_fallback": false } }
 ```
 
 ### 2.5 Weather and Outbreaks
