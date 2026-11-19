@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import * as authService from '../services/authService.js';
 import { clearSession, getSession, setSession } from '../utils/storage.js';
@@ -5,13 +6,15 @@ import { clearSession, getSession, setSession } from '../utils/storage.js';
 export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState(() => getSession().user ?? null);
   const [loading, setLoading] = useState(() => Boolean(getSession().accessToken));
 
   const reset = useCallback(() => {
     clearSession();
+    queryClient.clear();
     setUser(null);
-  }, []);
+  }, [queryClient]);
 
   // Restore the session on page load.
   useEffect(() => {
