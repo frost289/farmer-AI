@@ -67,7 +67,7 @@ export default function DiagnosisResult({ diagnosis, timedOut = false }) {
         </div>
       )}
       {r.low_confidence && <Alert type="warning">{t('diagnosis.low_confidence')}</Alert>}
-      {language === 'ny' && <Alert type="info">{t('ai.english_fallback')}</Alert>}
+      {treatment.language_fallback && <Alert type="info">{t('ai.english_fallback')}</Alert>}
       <TreatmentList title={t('diagnosis.organic')} items={treatment.organic} />
       <TreatmentList title={t('diagnosis.chemical')} items={treatment.chemical} />
       <TreatmentList title={t('diagnosis.prevention')} items={treatment.prevention} />
