@@ -94,7 +94,7 @@ While not `completed`/`failed`, `result` is `null`. The web app polls every 2 se
 ```json
 { "farm_id": "uuid", "question": "When should I weed my maize?", "language": "en" }
 ```
-Response `data`: `{ "answer": "...", "language": "en" }`
+Response `data`: `{ "answer": "...", "language": "en", "language_fallback": false }`. `language` is the actual response language; `language_fallback` is true when English is returned for a Chichewa request.
 
 `GET /planting-readiness?farm_id=uuid&crop=maize`
 ```json
@@ -146,20 +146,20 @@ Response: `{ "answer": "...", "sources": [], "model_version": "v0.1.0" }`
 ```json
 { "diagnosis": { "label": "maize_streak_virus", "severity_pct": 35 }, "crop": "maize", "language": "en" }
 ```
-Response: Treatment object `{ "organic": [], "chemical": [], "prevention": [], "warnings": [] }`.
+Response: Treatment object with `organic`, `chemical`, `prevention`, and `warnings` arrays, plus `language` (actual language returned) and `language_fallback` (boolean).
 
 `POST /ai/v1/advisory/planting-readiness`
 ```json
-{ "crop": "maize", "location": { "lat": -13.96, "lng": 33.78 }, "soil_type": "loam",
+{ "crop": "maize", "language": "ny", "location": { "lat": -13.96, "lng": 33.78 }, "soil_type": "loam",
   "weather": { "forecast_7d": [ { "date": "2026-11-16", "rain_mm": 0, "temp_c": 29 } ] } }
 ```
-Response: Planting Readiness object (same as 2.4).
+Response: Planting Readiness object (same as 2.4), plus `language` and `language_fallback` metadata.
 
 `POST /ai/v1/advisory/recommend-crops`
 ```json
-{ "location": { "lat": -13.96, "lng": 33.78 }, "soil_type": "loam", "weather": { "forecast_7d": [] } }
+{ "language": "ny", "location": { "lat": -13.96, "lng": 33.78 }, "soil_type": "loam", "weather": { "forecast_7d": [] } }
 ```
-Response: `{ "recommendations": [ { "crop": "maize", "variety": "SC403", "score": 0.91, "reason": "..." } ] }`
+Response: `recommendations` array plus top-level `language` and `language_fallback` metadata.
 
 ### 3.3 Speech (later phase, M4)
 
