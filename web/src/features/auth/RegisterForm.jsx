@@ -11,14 +11,14 @@ import { registerSchema } from '../../utils/validators.js';
 
 export default function RegisterForm() {
   const { register: signUp } = useAuth();
-  const { t, setLanguage } = useLanguage();
+  const { language, t, setLanguage } = useLanguage();
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm({ resolver: zodResolver(registerSchema), defaultValues: { role: 'farmer', language: 'en' } });
+  } = useForm({ resolver: zodResolver(registerSchema), defaultValues: { role: 'farmer', language } });
 
   const languageField = register('language');
 
