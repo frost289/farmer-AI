@@ -1,5 +1,6 @@
 import Alert from '../../components/common/Alert.jsx';
 import Loader from '../../components/common/Loader.jsx';
+import { useLanguage } from '../../hooks/useAuth.js';
 import { humanize, messageForCode, percent } from '../../utils/formatters.js';
 
 const SEVERITY = {
@@ -23,23 +24,22 @@ function TreatmentList({ title, items }) {
 }
 
 export default function DiagnosisResult({ diagnosis, timedOut = false }) {
+  const { t } = useLanguage();
   if (!diagnosis) return null;
   if (diagnosis.status === 'failed') {
     return (
-      <Alert type="error" title="We could not finish the check">
+      <Alert type="error" title={t('diagnosis.failed_title')}>
         {messageForCode(diagnosis.error_code)}
       </Alert>
     );
   }
   if (diagnosis.status !== 'completed') {
-    if (timedOut) {
-      return <Alert type="warning">This is taking longer than usual. Check back in &quot;Recent checks&quot; in a few minutes.</Alert>;
-    }
-    return <Loader label="Checking your crop..." />;
+    if (timedOut) return <Alert type="warning">{t('diagnosis.timed_out')}</Alert>;
+    return <Loader label={t('diagnosis.checking')} />;
   }
 
   const r = diagnosis.result;
-  const t = r.treatment || {};
+  const treatment = r.treatment || {};
   const isHealthy = r.type === 'healthy';
   const isUnknown = r.type === 'unknown';
 
@@ -47,32 +47,32 @@ export default function DiagnosisResult({ diagnosis, timedOut = false }) {
     <section className="card space-y-3" aria-live="polite">
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-xl font-bold">
-          {isHealthy ? 'Your crop looks healthy' : isUnknown ? 'Advice for the symptoms you described' : humanize(r.name)}
+          {isHealthy ? t('diagnosis.healthy') : isUnknown ? t('diagnosis.unknown') : humanize(r.name)}
         </h3>
         {r.severity && (
           <span className={`rounded-full px-3 py-1 text-sm font-semibold ${SEVERITY[r.severity]}`}>
-            {humanize(r.severity)} severity
+            {humanize(r.severity)} {t('diagnosis.severity')}
           </span>
         )}
       </div>
       {!isUnknown && r.confidence !== null && r.confidence !== undefined && (
-        <p className="text-sm text-gray-600">Confidence: {percent(r.confidence)}</p>
+        <p className="text-sm text-gray-600">{t('diagnosis.confidence')}: {percent(r.confidence)}</p>
       )}
       {r.severity_pct !== null && r.severity_pct !== undefined && (
         <div>
           <div className="h-2 w-full rounded bg-gray-200">
             <div className="h-2 rounded bg-red-500" style={{ width: `${Math.min(100, r.severity_pct)}%` }} />
           </div>
-          <p className="mt-1 text-xs text-gray-500">About {Math.round(r.severity_pct)}% of the leaf affected</p>
+          <p className="mt-1 text-xs text-gray-500">~{Math.round(r.severity_pct)}% {t('diagnosis.leaf_affected')}</p>
         </div>
       )}
       {r.low_confidence && (
-        <Alert type="warning">We are not very sure. Please consult an extension officer to confirm.</Alert>
+        <Alert type="warning">{t('diagnosis.low_confidence')}</Alert>
       )}
-      <TreatmentList title="Organic treatment" items={t.organic} />
-      <TreatmentList title="Chemical treatment" items={t.chemical} />
-      <TreatmentList title="How to prevent it" items={t.prevention} />
-      <TreatmentList title={isUnknown ? 'Advice' : 'Warnings'} items={t.warnings} />
+      <TreatmentList title={t('diagnosis.organic')} items={treatment.organic} />
+      <TreatmentList title={t('diagnosis.chemical')} items={treatment.chemical} />
+      <TreatmentList title={t('diagnosis.prevention')} items={treatment.prevention} />
+      <TreatmentList title={isUnknown ? t('diagnosis.advice') : t('diagnosis.warnings')} items={treatment.warnings} />
     </section>
   );
 }
