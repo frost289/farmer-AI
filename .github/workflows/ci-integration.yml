@@ -52,6 +52,15 @@ jobs:
           refresh="$(jq -er '.data.refresh_token' <<<"$register")"
           test "$(jq -r '.data.user.language' <<<"$register")" = "ny"
 
+          login="$(curl --fail --silent --show-error -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"phone\":\"$phone\",\"password\":\"$password\"}" \
+            "$base/auth/login")"
+          login_access="$(jq -er '.data.access_token' <<<"$login")"
+          test "$(jq -r '.data.user.language' <<<"$login")" = "ny"
+          curl --fail --silent --show-error \
+            -H "Authorization: Bearer $login_access" "$base/users/me" >/dev/null
+
           profile="$(curl --fail --silent --show-error \
             -H "Authorization: Bearer $access" "$base/users/me")"
           test "$(jq -r '.data.phone' <<<"$profile")" = "$phone"
@@ -93,7 +102,7 @@ jobs:
           test "$status" = "401"
           test "$(jq -r '.error.code' /tmp/refresh-after-logout.json)" = "UNAUTHORIZED"
 
-          echo "Registration, login session, profile update, farm create/list, token refresh, and logout checks passed."
+          echo "Registration, login, profile update, farm create/list, token refresh, and logout checks passed."
 
       - name: Show service logs on failure
         if: failure()
