@@ -21,7 +21,7 @@ const DONE = ['completed', 'failed'];
 
 export default function DiagnosisPage() {
   const queryClient = useQueryClient();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { compress, compressing } = useImageCompress();
   const [farmId, setFarmId] = useState('');
   const [crop, setCrop] = useState('');
@@ -65,8 +65,8 @@ export default function DiagnosisPage() {
 
   const onSubmit = () => {
     setFormError('');
-    if (!farmId) return setFormError('Choose a farm first.');
-    if (!file && !symptoms.trim()) return setFormError('Add a photo or describe what you see.');
+    if (!farmId) return setFormError(t('diagnosis.choose_farm'));
+    if (!file && !symptoms.trim()) return setFormError(t('diagnosis.add_photo_or_symptoms'));
     submit.mutate();
   };
 
@@ -74,25 +74,25 @@ export default function DiagnosisPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Check my crop</h1>
+      <h1 className="text-2xl font-bold">{t('diagnosis.title')}</h1>
 
       <section className="card space-y-4">
         {farms.isLoading ? <Loader /> : <FarmSelect farms={farms.data} value={farmId} onChange={setFarmId} />}
-        {farms.data?.length === 0 && <Alert type="info">Add a farm on the home page first.</Alert>}
-        <Select label="Crop (optional)" options={CROPS.map((c) => ({ value: c, label: humanize(c) }))} placeholder="Not sure / other" value={crop} onChange={(e) => setCrop(e.target.value)} />
+        {farms.data?.length === 0 && <Alert type="info">{t('diagnosis.no_farms')}</Alert>}
+        <Select label={t('diagnosis.crop_optional')} options={CROPS.map((c) => ({ value: c, label: humanize(c) }))} placeholder={t('diagnosis.not_sure')} value={crop} onChange={(e) => setCrop(e.target.value)} />
         <ImageUploader file={file} onChange={setFile} onError={setFormError} />
         <div className="space-y-2">
-          <Textarea label="Describe what you see (optional)" value={symptoms} maxLength={MAX_SYMPTOMS} onChange={(e) => setSymptoms(e.target.value)} placeholder="For example: yellow stripes on young maize leaves" />
-          <VoiceInput onText={(t) => setSymptoms((s) => `${s} ${t}`.trim())} />
+          <Textarea label={t('diagnosis.describe')} value={symptoms} maxLength={MAX_SYMPTOMS} onChange={(e) => setSymptoms(e.target.value)} placeholder={t('diagnosis.symptoms_hint')} />
+          <VoiceInput />
         </div>
         <Alert type="error">{formError || (submit.error && errorMessage(submit.error))}</Alert>
         <Button className="w-full" onClick={onSubmit} loading={busy}>
-          Check my crop
+          {t('diagnosis.submit')}
         </Button>
       </section>
 
       {diagnosisId && (
-        <section aria-label="Result">
+        <section aria-label={t('diagnosis.result')}>
           {diagnosis.error ? (
             <Alert type="error">{errorMessage(diagnosis.error)}</Alert>
           ) : (
@@ -104,7 +104,7 @@ export default function DiagnosisPage() {
       <SymptomChat farmId={farmId} language={language} />
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Recent checks</h2>
+        <h2 className="text-lg font-semibold">{t('diagnosis.recent')}</h2>
         <DiagnosisHistory farmId={farmId} onSelect={(id) => { setTimedOut(false); setDiagnosisId(id); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
       </section>
     </div>
