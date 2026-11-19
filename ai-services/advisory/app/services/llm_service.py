@@ -6,8 +6,6 @@ and keep the same return shape. See docs/API_SPECIFICATION.md section 3.2.
 """
 from app.config import MODEL_VERSION
 
-NY_NOTICE = "Chichewa answers are not available yet, so this answer is in English."
-
 FAQ = [
     (("weed", "weeding"),
      "Weed maize early: first weeding 2 to 3 weeks after emergence and a second one 3 to 4 weeks later. "
@@ -36,6 +34,10 @@ def answer_question(question: str, language: str, context: dict) -> dict:
             f"I do not have a specific answer for {crop + ' ' if crop else ''}that question yet. "
             "Please describe the problem (crop, what you see, how long) or ask your extension officer."
         )
-    if language == "ny":
-        answer = f"{answer}\n\n({NY_NOTICE})"
-    return {"answer": answer, "sources": [], "model_version": MODEL_VERSION}
+    return {
+        "answer": answer,
+        "sources": [],
+        "model_version": MODEL_VERSION,
+        "language": "en",
+        "language_fallback": language == "ny",
+    }
