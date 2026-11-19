@@ -3,9 +3,11 @@ import { useLanguage } from '../../hooks/useAuth.js';
 import { humanize } from '../../utils/formatters.js';
 
 export default function CropRecommendation({ recommendations = [] }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   if (!recommendations.length) return <EmptyState title={t('recommendations.none')} />;
   return (
+    <>
+    {language === 'ny' && <p className="mb-3 text-sm text-gray-600">{t('ai.english_fallback')}</p>}
     <ol className="space-y-3">
       {recommendations.map((r, i) => (
         <li key={`${r.crop}-${r.variety || i}`} className="card">
@@ -22,5 +24,6 @@ export default function CropRecommendation({ recommendations = [] }) {
         </li>
       ))}
     </ol>
+    </>
   );
 }
