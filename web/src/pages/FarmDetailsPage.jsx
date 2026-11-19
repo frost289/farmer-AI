@@ -24,7 +24,7 @@ export default function FarmDetailsPage() {
 
   const farm = useQuery({ queryKey: ['farm', id], queryFn: () => getFarm(id) });
   const plantings = useQuery({ queryKey: ['plantings', id], queryFn: () => listPlantings(id) });
-  const hasLocation = farm.data?.lat != null && farm.data?.lng != null;
+  const hasLocation = farm.data?.lat !== null && farm.data?.lat !== undefined && farm.data?.lng !== null && farm.data?.lng !== undefined;
   const weather = useQuery({
     queryKey: ['weather', id],
     queryFn: () => getFarmWeather(id),
