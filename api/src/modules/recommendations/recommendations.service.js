@@ -16,7 +16,11 @@ export async function cropRecommendations(user, farmId, requestId) {
   const language = (await usersRepo.findById(user.id))?.language || 'en';
   const result = await advisory.recommendCrops({ ...contextOf(weather), language }, requestId);
   await repo.save(farmId, 'crop', result);
-  return { recommendations: result.recommendations };
+  return {
+    recommendations: result.recommendations,
+    language: result.language,
+    language_fallback: result.language_fallback,
+  };
 }
 
 export async function plantingReadiness(user, farmId, crop, requestId) {
