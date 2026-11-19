@@ -29,13 +29,13 @@ export default function DiagnosisHistory({ farmId, limit = 5, onSelect }) {
           <button onClick={() => onSelect?.(d.id)} className="flex min-h-[56px] w-full items-center justify-between px-4 py-2 text-left">
             <span>
               <span className="font-medium">
-                {d.status === 'completed' ? humanize(d.result?.name) : humanize(d.status)}
+                {d.status === 'completed' ? humanize(d.result?.name) : t(`diagnosis.status.${d.status}`)}
               </span>
               <span className="block text-xs text-gray-500">
                 {humanize(d.crop) || t('common.crop_not_set')} · {formatDateTime(d.created_at)}
               </span>
             </span>
-            <span className={`text-sm font-semibold ${STATUS_STYLE[d.status]}`}>{humanize(d.status)}</span>
+            <span className={`text-sm font-semibold ${STATUS_STYLE[d.status]}`}>{t(`diagnosis.status.${d.status}`)}</span>
           </button>
         </li>
       ))}
