@@ -13,7 +13,7 @@ All endpoints work and return the exact contract shapes, but the logic is a **st
 | `POST /ai/v1/advisory/planting-readiness` | 7-day rain rules (`planting_service.py`) | seasonal and soil-aware model |
 | `POST /ai/v1/advisory/recommend-crops` | scoring table (`crop_recommender.py`) | model trained on Malawi data |
 
-Chichewa (`ny`) answers fall back to English with a notice until real translations exist.
+Chichewa (`ny`) requests currently return English text. Every generated-text endpoint reports the actual `language` (`en` or `ny`) and a `language_fallback` boolean; the web app uses this metadata to show the fallback notice. Do not claim a response is in Chichewa unless it actually is.
 
 ## Run
 
