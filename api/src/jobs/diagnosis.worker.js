@@ -56,7 +56,12 @@ async function diagnoseSymptoms(d, language, requestId) {
       confidence: null,
       severity: null,
       severity_pct: null,
-      treatment: { ...EMPTY_TREATMENT, warnings: [result.answer] },
+      treatment: {
+        ...EMPTY_TREATMENT,
+        warnings: [result.answer],
+        language: result.language,
+        language_fallback: result.language_fallback,
+      },
       low_confidence: true,
       model_version: result.model_version,
     },
