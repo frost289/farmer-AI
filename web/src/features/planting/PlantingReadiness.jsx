@@ -14,7 +14,7 @@ const VERDICT_STYLE = {
 };
 
 export default function PlantingReadiness({ readiness }) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   if (!readiness) return null;
   const verdict = Object.hasOwn(VERDICT_KEYS, readiness.verdict) ? readiness.verdict : 'wait';
   return (
