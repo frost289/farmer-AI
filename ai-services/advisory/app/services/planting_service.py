@@ -4,6 +4,7 @@ The seven-day forecast is suitable for a general weather watch, not a
 crop-specific planting verdict. Until each crop profile has reviewed,
 traceable agronomic rules, this service must not tell farmers to plant.
 """
+
 from typing import Optional
 
 from app.services.crop_profiles import get_crop_profile
