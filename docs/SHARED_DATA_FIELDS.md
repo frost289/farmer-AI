@@ -23,7 +23,7 @@ Single source of truth for field names, types and allowed values used across `we
 | `diagnosis_type` | `disease`, `pest`, `healthy`, `unknown` |
 | `severity` | `low`, `moderate`, `high` |
 | `planting_verdict` | `plant`, `wait`, `not_recommended` |
-| `soil_moisture` | `dry`, `adequate`, `wet` |
+| `soil_moisture` | `dry`, `adequate`, `wet`, `unknown` |
 | `alert_status` | `draft`, `sent`, `cancelled` |
 | `planting_status` | `planned`, `planted`, `growing`, `harvested`, `failed` |
 | `season` | `rainy`, `dry` |
@@ -55,7 +55,7 @@ Never returned: `password_hash`.
 For AI-generated text responses, `language` is the language actually returned (`en` or `ny`), and `language_fallback` is true when the requested language could not be provided and the service returned English. These fields are response metadata, not diagnosis labels or enums.
 
 ### Planting Readiness
-`verdict`, `reason`, `rain_onset_date` (optional), `soil_moisture`, `confidence`.
+`verdict`, `reason`, `rain_onset_date` (optional), `soil_moisture` (`unknown` when not measured), `confidence`. The seven-day forecast must not be presented as a field soil-moisture measurement.
 
 ### Crop Recommendation
 `crop`, `variety` (optional), `score` (0.0 to 1.0), `reason`.
