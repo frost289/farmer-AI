@@ -83,7 +83,7 @@ export default function DiagnosisPage() {
         <ImageUploader file={file} onChange={setFile} onError={setFormError} />
         <div className="space-y-2">
           <Textarea label={t('diagnosis.describe')} value={symptoms} maxLength={MAX_SYMPTOMS} onChange={(e) => setSymptoms(e.target.value)} placeholder={t('diagnosis.symptoms_hint')} />
-          <VoiceInput />
+          <VoiceInput onText={(spoken) => setSymptoms((current) => `${current} ${spoken}`.trim())} />
         </div>
         <Alert type="error">{formError || (submit.error && errorMessage(submit.error))}</Alert>
         <Button className="w-full" onClick={onSubmit} loading={busy}>
