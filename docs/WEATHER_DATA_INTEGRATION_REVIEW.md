@@ -102,3 +102,29 @@ A map pin and searchable traditional-authority/village directory are follow-up i
 - DCCMS FAQs and data access: https://www.metmalawi.gov.mw/faqs/
 - DCCMS products: https://www.metmalawi.gov.mw/products/
 - Open-Meteo documentation: https://open-meteo.com/en/docs
+
+## Live API smoke-test findings — 23 November 2026
+
+A live check of the MaDiPHS/NIBIO endpoints was attempted before selecting it as a production provider.
+
+### What was confirmed
+
+- The location-specific weather-source catalogue endpoint responded successfully for the documented Lilongwe-area coordinate `latitude=-13.995720`, `longitude=33.759819`.
+- That location-specific response listed two active location sources: Met Norway Locationforecast (nine days) and Open-Meteo (eight days). It did **not** return the DCCMS location forecast in that response.
+- The general source catalogue lists DCCMS Locationforecast as an active Malawi-only source with a five-day forecast, but this is not proof that the source is currently returned or usable for every location.
+- The source catalogue reports TAHMO as station-based and credential-protected; its metadata flags that data may need quality control. It should not be treated as a no-credentials live feed.
+- The documented amalgamation request for Lilongwe timed out during this check. This is an inconclusive availability result, not proof that the service is permanently unavailable.
+- The public getting-started documentation identifies the source metadata fields (authentication type, active state, forecast horizon, interval, parameters, spatial coverage and quality-control flag). These should be inspected at runtime rather than hard-coded.
+
+### Decision
+
+**Do not replace the working Open-Meteo integration yet.** The live checks do not establish that the amalgamation endpoint is reliable enough for a farmer-facing production dependency, and the documented DCCMS source was absent from the tested location-specific source list.
+
+The next safe engineering step is a non-production adapter spike with:
+1. strict request timeouts and response validation;
+2. source name, provider timestamp, fetch timestamp and quality metadata retained;
+3. a bounded cache and explicit stale-data flag;
+4. fallback to the existing Open-Meteo provider whenever MaDiPHS is unavailable, malformed or stale;
+5. tests using recorded provider responses, including missing fields and timeout cases.
+
+Before enabling this adapter for farmers, repeat checks from the deployed API environment, test coordinates in northern, central and southern Malawi, verify actual returned forecast dates/units, and obtain written confirmation of API usage and attribution terms. Contact DCCMS separately for an official integration feed and its conditions. No production provider switch is approved by this investigation.
