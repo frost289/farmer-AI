@@ -1,72 +1,51 @@
-"""'Can I plant this week?' rules.
+"""Evidence-gated planting readiness.
 
-STUB heuristic on the 7-day forecast only. Member 3: improve with seasonal forecasts,
-soil moisture and crop-specific thresholds.
+The seven-day forecast is suitable for a general weather watch, not a
+crop-specific planting verdict. Until each crop profile has reviewed,
+traceable agronomic rules, this service must not tell farmers to plant.
 """
-
 from typing import Optional
 
-RAIN_DAY_MM = 1.0
-ESTABLISHED_RAIN_MM = 25.0
-WATERLOGGING_MM = 150.0
-HEAT_LIMIT_C = 38.0
+from app.services.crop_profiles import get_crop_profile
 
 
 def assess(
     crop: str, soil_type: str, forecast: list[dict], language: str = "en"
 ) -> dict:
+    # soil_type and forecast are accepted for API compatibility. They are not
+    # sufficient to infer field soil moisture or crop-specific planting readiness.
+    del soil_type
     language_metadata = {"language": "en", "language_fallback": language == "ny"}
-    if not forecast:
-        return {
-            "verdict": "wait",
-            "reason": "No forecast available. Check again later or ask your extension officer.",
-            "rain_onset_date": None,
-            "soil_moisture": "dry",
-            "confidence": 0.2,
-            **language_metadata,
-        }
-    total = sum(d.get("rain_mm") or 0 for d in forecast)
-    rainy_days = sum(1 for d in forecast if (d.get("rain_mm") or 0) >= RAIN_DAY_MM)
-    hottest = max(
-        (d.get("temp_c") for d in forecast if d.get("temp_c") is not None), default=None
-    )
-    onset: Optional[str] = next(
-        (d["date"] for d in forecast if (d.get("rain_mm") or 0) >= 10), None
-    )
+    profile = get_crop_profile(crop)
 
-    moisture = "dry" if total < 10 else "wet" if total > 100 else "adequate"
-    if soil_type == "sandy" and moisture == "adequate" and total < 40:
-        moisture = "dry"  # sandy soil drains fast
+    onset: Optional[str] = None
+    if forecast:
+        onset = next(
+            (day["date"] for day in forecast if (day.get("rain_mm") or 0) >= 10),
+            None,
+        )
 
-    if total > WATERLOGGING_MM:
-        verdict, reason, conf = (
-            "not_recommended",
-            "Very heavy rain is forecast. Seed may rot in waterlogged soil.",
-            0.7,
-        )
-    elif hottest is not None and hottest > HEAT_LIMIT_C:
-        verdict, reason, conf = (
-            "wait",
-            "Very hot weather is forecast. Wait for cooler days to avoid drought stress.",
-            0.6,
-        )
-    elif total >= ESTABLISHED_RAIN_MM and rainy_days >= 3:
-        verdict, reason, conf = (
-            "plant",
-            f"Rain looks established ({total:.0f} mm over {rainy_days} days). Good time to plant {crop}.",
-            0.65,
+    if profile is None:
+        reason = (
+            "FarmAI does not yet have a reviewed planting profile for this crop. "
+            "Use the forecast as general weather information and ask an extension "
+            "officer for crop-specific planting guidance."
         )
     else:
-        verdict, reason, conf = (
-            "wait",
-            "Rains are not established yet. Wait for steady rain before planting to avoid seed rot or drought stress.",
-            0.65,
+        reason = (
+            f"FarmAI is preparing reviewed planting guidance for {profile['display_name']}. "
+            "The current seven-day forecast is general weather information, not a "
+            "crop-specific planting recommendation. Ask an extension officer before "
+            "making a planting decision."
         )
+
     return {
-        "verdict": verdict,
+        "verdict": "wait",
         "reason": reason,
         "rain_onset_date": onset,
-        "soil_moisture": moisture,
-        "confidence": conf,
+        # This field is retained for the current API contract. It is not a
+        # measured soil-moisture estimate; 'dry' must not be interpreted as one.
+        "soil_moisture": "dry",
+        "confidence": 0.2,
         **language_metadata,
     }
