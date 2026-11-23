@@ -33,7 +33,8 @@ def assess(
         )
     else:
         reason = (
-            f"FarmAI is preparing reviewed planting guidance for {profile['display_name']}. "
+            f"FarmAI is preparing reviewed planting guidance for "
+            f"{profile['display_name']}. "
             "The current seven-day forecast is general weather information, not a "
             "crop-specific planting recommendation. Ask an extension officer before "
             "making a planting decision."
@@ -43,8 +44,7 @@ def assess(
         "verdict": "wait",
         "reason": reason,
         "rain_onset_date": onset,
-        # This field is retained for the current API contract. It is not a
-        # measured soil-moisture estimate; 'dry' must not be interpreted as one.
+        # No field soil-moisture measurement is available in this assessment.
         "soil_moisture": "unknown",
         "confidence": 0.2,
         **language_metadata,
