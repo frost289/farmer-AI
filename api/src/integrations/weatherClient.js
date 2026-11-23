@@ -34,7 +34,7 @@ export async function fetchForecast(lat, lng) {
     return daily.time.map((date, i) => {
       const rain = Number(daily.precipitation_sum[i]);
       const temp = Number(daily.temperature_2m_max[i]);
-      if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date) || !Number.isFinite(rain) || !Number.isFinite(temp)) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(rain) || !Number.isFinite(temp)) {
         throw new Error('Weather provider returned invalid forecast values');
       }
       return { date, rain_mm: rain, temp_c: temp };
