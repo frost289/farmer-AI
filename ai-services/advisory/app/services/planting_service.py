@@ -45,7 +45,7 @@ def assess(
         "rain_onset_date": onset,
         # This field is retained for the current API contract. It is not a
         # measured soil-moisture estimate; 'dry' must not be interpreted as one.
-        "soil_moisture": "dry",
+        "soil_moisture": "unknown",
         "confidence": 0.2,
         **language_metadata,
     }
