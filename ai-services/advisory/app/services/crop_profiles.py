@@ -3,6 +3,7 @@
 Do not add numeric weather thresholds here until they have a traceable,
 legally usable source and review by a qualified Malawi agronomist.
 """
+
 from typing import TypedDict
 
 
