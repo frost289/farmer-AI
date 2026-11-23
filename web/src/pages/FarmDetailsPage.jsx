@@ -80,7 +80,7 @@ export default function FarmDetailsPage() {
       {remove.error && <Alert type="error">{errorMessage(remove.error)}</Alert>}
 
       {hasLocation ? (
-        <WeatherSummary weather={weather.data} isLoading={weather.isLoading} error={weather.error} />
+        <WeatherSummary weather={weather.data} plantings={plantings.data || []} isLoading={weather.isLoading} error={weather.error} />
       ) : (
         <Alert type="info">Add your farm location (Edit) to see the weather forecast and get planting advice.</Alert>
       )}
