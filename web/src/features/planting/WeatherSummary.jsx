@@ -63,7 +63,7 @@ export default function WeatherSummary({ weather, plantings = [], isLoading, err
         {watches.length ? watches.map((watch) => (
           <Alert key={watch} type="warning">{t(`planting.${watch}`)}</Alert>
         )) : (
-          <p className="text-sm text-gray-600">No general weather watch triggered by these simple checks.</p>
+          <p className="text-sm text-gray-600">{t('planting.no_weather_watch')}</p>
         )}
         <p className="text-xs text-gray-500">{t('planting.general_guidance_note')}</p>
       </div>
