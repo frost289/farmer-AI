@@ -128,3 +128,31 @@ The next safe engineering step is a non-production adapter spike with:
 5. tests using recorded provider responses, including missing fields and timeout cases.
 
 Before enabling this adapter for farmers, repeat checks from the deployed API environment, test coordinates in northern, central and southern Malawi, verify actual returned forecast dates/units, and obtain written confirmation of API usage and attribution terms. Contact DCCMS separately for an official integration feed and its conditions. No production provider switch is approved by this investigation.
+
+
+## Crop-aware weather advice — scope and evidence requirements
+
+The initial FarmAI crop catalogue contains maize, rice, groundnut, soybean, tobacco, cassava, sweet potato, beans, cotton, tomato and pigeon pea. The current seven-day weather summary is deliberately a **general farm weather watch** for every crop recorded on a farm. Its simple dry-spell, heavy-rain and high-temperature triggers are not crop-specific agronomic thresholds and must not be presented as planting recommendations.
+
+### Evidence sources identified
+
+- The Malawi Ministry of Agriculture / Department of Agricultural Research Services published a 2025 compilation of extension circulars covering released crop varieties, fertilizers and cropping systems. These circulars are useful primary sources for variety-specific recommendations and are approved through the Agricultural Technology Clearing Committee. Source: https://agriculture.gov.mw/files/medias/ministry-of-agriculture-recommended-crops-fertilizers-and-cropping-systems-1744366276.pdf
+- The MaDiPHS Knowledge Library identifies the Ministry of Agriculture's *Guide to Agriculture Production and Natural Resources Management in Malawi* as a Malawi-specific technical reference. However, its listed licence is **Other (Non-Commercial)**. Do not copy, redistribute, embed or use its content in a monetized FarmAI knowledge base until the rights holder grants written permission or legal review confirms a permitted use. Source: https://ckan.madiphs.org/en_GB/plant-health-knowledge-product/guide-to-agriculture-productionand-natural-resources-managementin-malawi
+- The World Bank Malawi Climate-Smart Agriculture profile provides useful country context and crop practices, but it is not a substitute for current variety- and stage-specific recommendations from Malawi's extension authorities. Source: https://climateknowledgeportal.worldbank.org/sites/default/files/2019-06/CSA%20_Profile_Malawi.pdf
+
+### Safe implementation sequence
+
+1. Keep general forecast summaries and weather watches available for all eleven crops.
+2. Build a structured agronomy evidence register per crop and, where evidence supports it, per variety. Record the recommendation, crop stage, agro-ecological applicability, source title, issuing authority, publication date, page/section, review date, and permitted-use/licensing status.
+3. Ask DARS/DAES or qualified Malawi agronomists to review thresholds before they are used to trigger farmer-facing advice. Do not infer a universal threshold from a single variety, district or research trial.
+4. Collect crop stage and planting date (and irrigation/rainfed status where relevant) before issuing crop-specific advice. A crop name alone is insufficient to infer its current water needs.
+5. Separate short-range forecast alerts from seasonal outlooks and observed conditions. A seven-day forecast cannot establish whole-season suitability or guarantee planting success.
+6. If evidence is missing, show a general weather alert and explain its limits; do not invent a crop-specific recommendation.
+
+### Current data gap
+
+The current weather API contract provides daily rainfall and maximum temperature only. Before implementing richer crop-stage advice, evaluate whether minimum temperature, humidity, wind and observed rainfall are available and sufficiently reliable from the selected provider. Do not assume that forecast rainfall equals field soil moisture; soil texture, drainage, slope, previous rainfall and irrigation also matter.
+
+### Review decision
+
+Support all eleven crops in the product experience, but release crop-specific weather thresholds only when each rule has a traceable, legally usable source and review by a qualified agronomist. This staged approach avoids giving unsupported advice merely to claim complete crop coverage.
