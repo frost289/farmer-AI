@@ -1,0 +1,104 @@
+# FarmAI Weather Data Integration Review
+
+**Status:** Technical investigation; no provider has been selected for production yet.  
+**Scope:** Malawi-first farm-level forecasts and agricultural weather advice.
+
+## Current implementation
+
+The API currently requests a seven-day forecast from Open-Meteo using farm coordinates. Results are cached for three hours by coordinates rounded to two decimal places. If the provider request fails, the API returns a stale cached forecast when one exists.
+
+This is a useful fallback, but it is not yet a complete farm-weather intelligence system:
+- The current UI shows daily rainfall and maximum temperature only.
+- The cache key rounds coordinates to roughly kilometre-scale cells; it should not be presented as a precise measurement at an individual field.
+- The application does not yet expose source, forecast issue time, observation time, or a data-quality indicator to farmers.
+- Weather data is not yet fused with satellite-derived rainfall/vegetation indicators.
+
+## Provider investigation
+
+### 1. MaDiPHS / NIBIO Weather Integration Platform — preferred first technical evaluation
+
+Documentation:
+- https://integration.madiphs.org/
+- https://integration.madiphs.org/api/weather/introduction
+- https://integration.madiphs.org/api/weather/getting-started
+- https://integration.madiphs.org/api/weather/amalgation-service
+
+The public documentation describes a weather-source catalogue and an amalgamation service intended to combine available sources for a coordinate. The getting-started guide lists:
+- DCCMS location forecast for Malawi (five-day forecast).
+- Met Norway Locationforecast (global forecast; documentation notes approximately 9 km resolution outside the Nordic-Baltic region).
+- TAHMO weather stations.
+- Open-Meteo.
+
+The MaDiPHS platform also describes access to Malawi historical weather and climate datasets. Its national client describes integration of weather data, satellite observations, pest surveillance and decision-support systems.
+
+**Why evaluate it first:** it offers a Malawi-relevant discovery/aggregation layer and may reduce the work of integrating several providers independently.
+
+**Before production use, verify:** current API availability and uptime, authentication requirements, request limits, permitted commercial use, attribution requirements, data freshness, exact response schema, source provenance, and whether the amalgamation endpoint is suitable for automated high-volume app requests. Public documentation alone does not establish an SLA or guaranteed farm-level accuracy.
+
+### 2. DCCMS — authoritative national partner to approach
+
+Official information:
+- https://www.metmalawi.gov.mw/faqs/
+- https://www.metmalawi.gov.mw/products/
+- https://www.metmalawi.gov.mw/data-requests/
+
+DCCMS publishes daily and five-day forecasts, ten-day agro-meteorological bulletins, seasonal forecasts and weather alerts. Its FAQ explicitly asks developers wishing to integrate meteorological data into an app or website to contact DCCMS.
+
+**Action:** contact DCCMS to confirm access conditions, data licensing, attribution, update cadence and the correct operational feed. Do not scrape public pages as a substitute for an agreed data interface.
+
+### 3. Open-Meteo — retain as initial fallback
+
+Documentation:
+- https://open-meteo.com/en/docs
+
+It is already integrated and does not require an API key for the current basic use. Keep it as a fallback while evaluating Malawi-specific sources. Confirm the applicable terms and usage limits before production scale or commercial use.
+
+### 4. Satellite data — separate phase, not a replacement for forecasts
+
+Potential datasets to evaluate include satellite-derived rainfall estimates and vegetation indices. These can support historical rainfall context, vegetation-condition monitoring and regional anomaly detection. They are not equivalent to a live field weather station:
+- Satellite products may be delayed, composited or model-derived.
+- Cloud cover, spatial resolution and revisit interval affect usability.
+- Vegetation indices indicate changes in vegetation condition; they do not diagnose a particular pest or disease.
+- Satellite rainfall estimates should be compared with ground observations where possible.
+
+Do not label satellite-derived estimates as exact live rainfall at a farmer's field.
+
+## Recommended target design
+
+1. Store the farmer-confirmed farm coordinates and district in the FarmAI API.
+2. Fetch provider data server-side; never expose provider credentials in the browser.
+3. Normalize provider responses into one internal weather contract.
+4. Store provider/source name, fetched timestamp, forecast issue timestamp (when supplied), observation timestamp (when supplied), and quality/staleness metadata.
+5. Cache forecasts and retain the last usable response for low-connectivity periods.
+6. Show farmers simple, actionable summaries with clear freshness labels.
+7. Feed validated weather variables and crop stage into advisory logic; avoid generating high-confidence planting instructions from a single uncertain forecast.
+
+## Farm location UX decision
+
+Farmers should not be required to know or type latitude/longitude. The first implementation should:
+- Offer an explicit **Use my current location** action.
+- Explain why location is requested and ask browser permission only after the farmer taps.
+- Make location optional at farm creation; the farmer can add it later.
+- Keep district selection as the non-GPS fallback.
+- Store coordinates silently in the existing `lat` and `lng` fields.
+- Make it clear that phone location should be captured while the farmer is at the farm, and allow it to be removed or recaptured.
+
+A map pin and searchable traditional-authority/village directory are follow-up improvements. They should only be added once a dependable Malawi boundary/place dataset and map provider are selected.
+
+## Immediate next steps
+
+1. Manually test GPS permission granted, denied, unavailable, timeout, and location removal in the Codespaces-hosted app.
+2. Confirm a farm can be saved without coordinates and that weather/planting screens explain why a location is needed.
+3. Prototype MaDiPHS responses for at least one northern, central and southern Malawi coordinate; compare source metadata and freshness with Open-Meteo.
+4. Contact DCCMS about an official app integration feed and licensing.
+5. Decide provider priority/fallback only after these checks; then implement a normalized API adapter and tests.
+
+## References
+
+- MaDiPHS Integration Platform: https://integration.madiphs.org/
+- MaDiPHS weather API introduction: https://integration.madiphs.org/api/weather/introduction
+- MaDiPHS weather API getting started: https://integration.madiphs.org/api/weather/getting-started
+- MaDiPHS amalgamation service: https://integration.madiphs.org/api/weather/amalgation-service
+- DCCMS FAQs and data access: https://www.metmalawi.gov.mw/faqs/
+- DCCMS products: https://www.metmalawi.gov.mw/products/
+- Open-Meteo documentation: https://open-meteo.com/en/docs
