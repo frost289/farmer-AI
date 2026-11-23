@@ -5,17 +5,23 @@ import { LIMITS } from '../../utils/constants.js';
 import { getAccessibleFarm } from '../farms/farms.service.js';
 
 const round2 = (n) => Math.round(Number(n) * 100) / 100;
+const WEATHER_SOURCE = 'Open-Meteo';
 
-/** 7-day forecast, cached for 3 hours per rounded coordinate. Falls back to stale cache. */
+/** Seven-day forecast with a three-hour cache and an explicit stale-cache fallback. */
 export async function getForecast(lat, lng) {
   const [rLat, rLng] = [round2(lat), round2(lng)];
   const cached = await repo.findCache(rLat, rLng);
   const ageMs = cached ? Date.now() - new Date(cached.fetched_at).getTime() : Infinity;
-  if (cached && ageMs < LIMITS.weatherCacheHours * 3600 * 1000) return cached;
+
+  if (cached && ageMs < LIMITS.weatherCacheHours * 3600 * 1000) {
+    return { ...cached, source: WEATHER_SOURCE, stale: false };
+  }
+
   try {
-    return await repo.saveCache(rLat, rLng, await fetchForecast(rLat, rLng));
+    const saved = await repo.saveCache(rLat, rLng, await fetchForecast(rLat, rLng));
+    return { ...saved, source: WEATHER_SOURCE, stale: false };
   } catch (err) {
-    if (cached) return cached;
+    if (cached) return { ...cached, source: WEATHER_SOURCE, stale: true };
     throw err;
   }
 }
@@ -27,8 +33,15 @@ export async function getFarmWeather(farmId, user) {
       { field: 'farm_id', issue: 'Farm has no location' },
     ]);
   }
-  const { forecast, fetched_at: fetchedAt } = await getForecast(farm.lat, farm.lng);
-  return { farm, location: { lat: farm.lat, lng: farm.lng }, forecast_7d: forecast, fetched_at: fetchedAt };
+  const { forecast, fetched_at: fetchedAt, source, stale } = await getForecast(farm.lat, farm.lng);
+  return {
+    farm,
+    location: { lat: farm.lat, lng: farm.lng },
+    forecast_7d: forecast,
+    fetched_at: fetchedAt,
+    source,
+    stale,
+  };
 }
 
 export async function getHeatmap() {
