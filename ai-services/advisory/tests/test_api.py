@@ -92,8 +92,7 @@ def test_all_catalogue_crops_have_disabled_evidence_gated_profiles():
     }
     assert set(CROP_PROFILES) == expected
     assert all(
-        profile["weather_rules_enabled"] is False
-        for profile in CROP_PROFILES.values()
+        profile["weather_rules_enabled"] is False for profile in CROP_PROFILES.values()
     )
     assert all(
         profile["evidence_status"] == "needs_agronomist_review"
@@ -103,12 +102,7 @@ def test_all_catalogue_crops_have_disabled_evidence_gated_profiles():
 
 
 def test_planting_readiness_does_not_invent_crop_specific_thresholds():
-    weather = {
-        "forecast_7d": [
-            {"date": "2026-11-24", "rain_mm": 12, "temp_c": 28}
-        ]
-        * 7
-    }
+    weather = {"forecast_7d": [{"date": "2026-11-24", "rain_mm": 12, "temp_c": 28}] * 7}
     for crop in CROP_PROFILES:
         response = client.post(
             "/ai/v1/advisory/planting-readiness",
