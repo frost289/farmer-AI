@@ -46,14 +46,20 @@ services:
       advisory: { condition: service_started }
       vision: { condition: service_started }
 
+  # Local-only Dockerfiles install dependencies from a host-prepared wheelhouse.
+  # This avoids requiring Docker containers to reach PyPI during image builds.
   advisory:
-    build: ./ai-services/advisory
+    build:
+      context: .
+      dockerfile: docker/local-advisory.Dockerfile
     ports: ['8001:8001']
     environment:
       INTERNAL_API_KEY: *internal_key
 
   vision:
-    build: ./ai-services/vision
+    build:
+      context: .
+      dockerfile: docker/local-vision.Dockerfile
     ports: ['8002:8002']
     environment:
       INTERNAL_API_KEY: *internal_key
@@ -67,7 +73,9 @@ services:
 
   # Later phase (Chichewa speech). Start with: docker compose --profile later up speech
   speech:
-    build: ./ai-services/speech
+    build:
+      context: .
+      dockerfile: docker/local-speech.Dockerfile
     profiles: [later]
     ports: ['8003:8003']
     environment:
