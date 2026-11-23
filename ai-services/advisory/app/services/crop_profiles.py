@@ -15,17 +15,61 @@ class CropProfile(TypedDict):
 # These records establish catalogue coverage, not agronomic recommendations.
 # All weather rules remain disabled pending crop/variety/stage-specific review.
 CROP_PROFILES: dict[str, CropProfile] = {
-    "maize": {"display_name": "Maize", "evidence_status": "needs_agronomist_review", "weather_rules_enabled": False},
-    "rice": {"display_name": "Rice", "evidence_status": "needs_agronomist_review", "weather_rules_enabled": False},
-    "groundnut": {"display_name": "Groundnut", "evidence_status": "needs_agronomist_review", "weather_rules_enabled": False},
-    "soybean": {"display_name": "Soybean", "evidence_status": "needs_agronomist_review", "weather_rules_enabled": False},
-    "tobacco": {"display_name": "Tobacco", "evidence_status": "needs_agronomist_review", "weather_rules_enabled": False},
-    "cassava": {"display_name": "Cassava", "evidence_status": "needs_agronomist_review", "weather_rules_enabled": False},
-    "sweet_potato": {"display_name": "Sweet potato", "evidence_status": "needs_agronomist_review", "weather_rules_enabled": False},
-    "beans": {"display_name": "Beans", "evidence_status": "needs_agronomist_review", "weather_rules_enabled": False},
-    "cotton": {"display_name": "Cotton", "evidence_status": "needs_agronomist_review", "weather_rules_enabled": False},
-    "tomato": {"display_name": "Tomato", "evidence_status": "needs_agronomist_review", "weather_rules_enabled": False},
-    "pigeon_pea": {"display_name": "Pigeon pea", "evidence_status": "needs_agronomist_review", "weather_rules_enabled": False},
+    "maize": {
+        "display_name": "Maize",
+        "evidence_status": "needs_agronomist_review",
+        "weather_rules_enabled": False,
+    },
+    "rice": {
+        "display_name": "Rice",
+        "evidence_status": "needs_agronomist_review",
+        "weather_rules_enabled": False,
+    },
+    "groundnut": {
+        "display_name": "Groundnut",
+        "evidence_status": "needs_agronomist_review",
+        "weather_rules_enabled": False,
+    },
+    "soybean": {
+        "display_name": "Soybean",
+        "evidence_status": "needs_agronomist_review",
+        "weather_rules_enabled": False,
+    },
+    "tobacco": {
+        "display_name": "Tobacco",
+        "evidence_status": "needs_agronomist_review",
+        "weather_rules_enabled": False,
+    },
+    "cassava": {
+        "display_name": "Cassava",
+        "evidence_status": "needs_agronomist_review",
+        "weather_rules_enabled": False,
+    },
+    "sweet_potato": {
+        "display_name": "Sweet potato",
+        "evidence_status": "needs_agronomist_review",
+        "weather_rules_enabled": False,
+    },
+    "beans": {
+        "display_name": "Beans",
+        "evidence_status": "needs_agronomist_review",
+        "weather_rules_enabled": False,
+    },
+    "cotton": {
+        "display_name": "Cotton",
+        "evidence_status": "needs_agronomist_review",
+        "weather_rules_enabled": False,
+    },
+    "tomato": {
+        "display_name": "Tomato",
+        "evidence_status": "needs_agronomist_review",
+        "weather_rules_enabled": False,
+    },
+    "pigeon_pea": {
+        "display_name": "Pigeon pea",
+        "evidence_status": "needs_agronomist_review",
+        "weather_rules_enabled": False,
+    },
 }
 
 
