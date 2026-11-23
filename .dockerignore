@@ -1,0 +1,20 @@
+.git
+.github
+.vscode
+.idea
+.venv
+venv
+**/__pycache__
+**/*.pyc
+**/node_modules
+**/dist
+**/build
+**/coverage
+uploads
+*.log
+.env
+.env.*
+!.env.example
+# Keep the host-prepared Python wheels required by the local AI Dockerfiles.
+!.docker-wheelhouse
+!.docker-wheelhouse/**

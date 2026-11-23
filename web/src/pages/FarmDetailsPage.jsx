@@ -24,7 +24,7 @@ export default function FarmDetailsPage() {
 
   const farm = useQuery({ queryKey: ['farm', id], queryFn: () => getFarm(id) });
   const plantings = useQuery({ queryKey: ['plantings', id], queryFn: () => listPlantings(id) });
-  const hasLocation = farm.data?.lat != null && farm.data?.lng != null;
+  const hasLocation = farm.data?.lat !== null && farm.data?.lat !== undefined && farm.data?.lng !== null && farm.data?.lng !== undefined;
   const weather = useQuery({
     queryKey: ['weather', id],
     queryFn: () => getFarmWeather(id),
@@ -80,7 +80,7 @@ export default function FarmDetailsPage() {
       {remove.error && <Alert type="error">{errorMessage(remove.error)}</Alert>}
 
       {hasLocation ? (
-        <WeatherSummary weather={weather.data} isLoading={weather.isLoading} error={weather.error} />
+        <WeatherSummary weather={weather.data} plantings={plantings.data || []} isLoading={weather.isLoading} error={weather.error} />
       ) : (
         <Alert type="info">Add your farm location (Edit) to see the weather forecast and get planting advice.</Alert>
       )}

@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, File, Form, FastAPI, UploadFile
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, FastAPI, File, Form, UploadFile
 
 from app.config import MODEL_VERSION
 from app.errors import register_error_handlers
@@ -11,7 +13,9 @@ router = APIRouter(prefix="/ai/v1/speech", dependencies=[Depends(verify_internal
 
 
 @router.post("/transcribe")
-async def transcribe_audio(audio: UploadFile = File(...), language: str = Form(default="en")):
+async def transcribe_audio(
+    audio: Annotated[UploadFile, File()], language: Annotated[str, Form()] = "en"
+):
     return transcribe(await audio.read(), language)
 
 

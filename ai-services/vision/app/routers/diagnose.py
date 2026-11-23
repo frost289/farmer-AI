@@ -34,7 +34,12 @@ async def diagnose(
     data, img = await read_valid_image(image)
     quality = check_quality(img)
     if not quality["usable"]:
-        return {"predictions": [], "severity_pct": None, "model_version": MODEL_VERSION, "quality": quality}
+        return {
+            "predictions": [],
+            "severity_pct": None,
+            "model_version": MODEL_VERSION,
+            "quality": quality,
+        }
     predictions = classify(data, crop)
     healthy = predictions[0]["type"] == "healthy"
     return {

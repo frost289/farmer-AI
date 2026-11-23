@@ -1,5 +1,6 @@
 """Speech-to-text. LATER PHASE (Member 4): research Whisper fine-tuning, Mozilla Common Voice
 and other Chichewa data, then implement `transcribe`."""
+
 from app.errors import ServiceError
 
 

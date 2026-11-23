@@ -1,9 +1,13 @@
 import EmptyState from '../../components/common/EmptyState.jsx';
+import { useLanguage } from '../../hooks/useAuth.js';
 import { humanize } from '../../utils/formatters.js';
 
-export default function CropRecommendation({ recommendations = [] }) {
-  if (!recommendations.length) return <EmptyState title="No recommendations yet" />;
+export default function CropRecommendation({ recommendations = [], languageFallback = false }) {
+  const { t } = useLanguage();
+  if (!recommendations.length) return <EmptyState title={t('recommendations.none')} />;
   return (
+    <>
+    {languageFallback && <p className="mb-3 text-sm text-gray-600">{t('ai.english_fallback')}</p>}
     <ol className="space-y-3">
       {recommendations.map((r, i) => (
         <li key={`${r.crop}-${r.variety || i}`} className="card">
@@ -13,12 +17,13 @@ export default function CropRecommendation({ recommendations = [] }) {
               {r.variety ? ` (${r.variety})` : ''}
             </h3>
             <span className="rounded-full bg-brand-100 px-3 py-1 text-sm font-semibold text-brand-700">
-              {Math.round(r.score * 100)}% match
+              {Math.round(r.score * 100)}% {t('recommendations.match')}
             </span>
           </div>
           <p className="mt-1 text-sm text-gray-600">{r.reason}</p>
         </li>
       ))}
     </ol>
+    </>
   );
 }

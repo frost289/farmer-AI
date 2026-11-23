@@ -4,13 +4,14 @@ import { useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Alert from '../../components/common/Alert.jsx';
 import Button from '../../components/common/Button.jsx';
-import Input from '../../components/common/Input.jsx';
-import { useAuth } from '../../hooks/useAuth.js';
+import Input, { Select } from '../../components/common/Input.jsx';
+import { useAuth, useLanguage } from '../../hooks/useAuth.js';
 import { errorMessage } from '../../utils/formatters.js';
 import { loginSchema } from '../../utils/validators.js';
 
 export default function LoginForm() {
   const { login } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState('');
@@ -33,15 +34,24 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       <Alert type="error">{error}</Alert>
-      <Input label="Phone number" type="tel" inputMode="tel" autoComplete="tel" placeholder="+265999000111" error={errors.phone?.message} {...register('phone')} />
-      <Input label="Password" type="password" autoComplete="current-password" error={errors.password?.message} {...register('password')} />
+      <Input label={t('auth.phone')} type="tel" inputMode="tel" autoComplete="tel" placeholder="+265999000111" error={errors.phone?.message} {...register('phone')} />
+      <Input label={t('auth.password')} type="password" autoComplete="current-password" error={errors.password?.message} {...register('password')} />
+      <Select
+        label={t('auth.language')}
+        options={[
+          { value: 'en', label: 'English' },
+          { value: 'ny', label: 'Chichewa' },
+        ]}
+        value={language}
+        onChange={(event) => setLanguage(event.target.value)}
+      />
       <Button type="submit" loading={isSubmitting} className="w-full">
-        Log in
+        {t('auth.login')}
       </Button>
       <p className="text-center text-sm">
-        New to FarmAI?{' '}
+        {t('auth.new_to_farmai')}{' '}
         <Link to="/register" className="font-semibold text-brand-700">
-          Create an account
+          {t('auth.create_an_account')}
         </Link>
       </p>
     </form>

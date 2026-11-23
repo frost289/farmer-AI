@@ -1,19 +1,24 @@
-import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import * as authService from '../services/authService.js';
+import { LanguageContext } from './LanguageContext.jsx';
 import { clearSession, getSession, setSession } from '../utils/storage.js';
 
 export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const queryClient = useQueryClient();
+  const { setLanguage } = useContext(LanguageContext);
   const [user, setUser] = useState(() => getSession().user ?? null);
   const [loading, setLoading] = useState(() => Boolean(getSession().accessToken));
 
   const reset = useCallback(() => {
     clearSession();
+    queryClient.clear();
     setUser(null);
-  }, []);
+  }, [queryClient]);
 
-  // Restore the session on page load.
+  // Restore the session and the saved language preference on page load.
   useEffect(() => {
     if (!getSession().accessToken) return;
     authService
@@ -21,10 +26,11 @@ export function AuthProvider({ children }) {
       .then((me) => {
         setSession({ ...getSession(), user: me });
         setUser(me);
+        if (me.language) setLanguage(me.language);
       })
       .catch(reset)
       .finally(() => setLoading(false));
-  }, [reset]);
+  }, [reset, setLanguage]);
 
   // The api client fires this when the refresh token is rejected.
   useEffect(() => {
@@ -35,8 +41,9 @@ export function AuthProvider({ children }) {
   const startSession = useCallback((data) => {
     setSession({ accessToken: data.access_token, refreshToken: data.refresh_token, user: data.user });
     setUser(data.user);
+    if (data.user?.language) setLanguage(data.user.language);
     return data.user;
-  }, []);
+  }, [setLanguage]);
 
   const login = useCallback(async (body) => startSession(await authService.login(body)), [startSession]);
   const register = useCallback(
@@ -54,7 +61,8 @@ export function AuthProvider({ children }) {
     const me = await authService.getMe();
     setSession({ ...getSession(), user: me });
     setUser(me);
-  }, []);
+    if (me.language) setLanguage(me.language);
+  }, [setLanguage]);
 
   const value = useMemo(
     () => ({ user, loading, login, register, logout, refreshUser }),

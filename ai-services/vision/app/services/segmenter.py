@@ -3,6 +3,7 @@
 STUB: colour-threshold mask from severity.py. Member 4: replace with Segment Anything (SAM)
 or a trained segmentation model; keep the return shape.
 """
+
 import base64
 import io
 

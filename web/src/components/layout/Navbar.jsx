@@ -24,10 +24,12 @@ export default function Navbar({ onMenu }) {
         </Link>
       </div>
       <div className="flex items-center gap-2">
+        <label className="sr-only" htmlFor="language-select">{t('auth.language')}</label>
         <select
+          id="language-select"
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
-          aria-label="Language"
+          aria-label={t('auth.language')}
           className="rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm"
         >
           <option value="en">English</option>
