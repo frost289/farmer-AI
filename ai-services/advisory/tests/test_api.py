@@ -105,6 +105,7 @@ def test_planting_readiness_does_not_invent_crop_specific_thresholds():
         assert body["verdict"] == "wait"
         assert "not a crop-specific planting recommendation" in body["reason"]
         assert body["confidence"] == 0.2
+        assert body["soil_moisture"] == "unknown"
         assert body["language"] == "en"
         assert body["language_fallback"] is False
 
