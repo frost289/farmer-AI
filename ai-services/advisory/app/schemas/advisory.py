@@ -74,7 +74,7 @@ class PlantingReadinessResponse(BaseModel):
     verdict: Literal["plant", "wait", "not_recommended"]
     reason: str
     rain_onset_date: Optional[str] = None
-    soil_moisture: Literal["dry", "adequate", "wet"]
+    soil_moisture: Literal["dry", "adequate", "wet", "unknown"]
     confidence: float = Field(ge=0, le=1)
     language: Language = "en"
     language_fallback: bool = False
